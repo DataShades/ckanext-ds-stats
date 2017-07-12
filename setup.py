@@ -80,7 +80,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points='''
         [ckan.plugins]
-        ds-stats=ckanext.ds-stats.plugin:Ds-StatsPlugin
+        ds_stats=ckanext.ds_stats.plugin:DsStatsPlugin
 
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan

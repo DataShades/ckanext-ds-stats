@@ -30,7 +30,7 @@ To install ckanext-ds-stats:
 
      pip install ckanext-ds-stats
 
-3. Add ``ds-stats`` to the ``ckan.plugins`` setting in your CKAN
+3. Add ``ds_stats`` to the ``ckan.plugins`` setting in your CKAN
    config file (by default the config file is located at
    ``/etc/ckan/default/production.ini``).
 
