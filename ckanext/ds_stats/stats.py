@@ -16,8 +16,7 @@ if cache_enabled:
             config.get('ckanext.stats.cache_default_timeout', '86400'))
     cache_fast_timeout = p.toolkit.asint(
             config.get('ckanext.stats.cache_fast_timeout', '600'))
-    pylons_cache = cache._current_obj()
-    our_cache = pylons_cache.get_cache('stats', type='memory')
+    our_cache = cache.get_cache('stats', type='memory')
 
 DATE_FORMAT = '%Y-%m-%d'
 TODAY = datetime.date.today()

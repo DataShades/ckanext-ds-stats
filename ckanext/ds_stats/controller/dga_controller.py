@@ -80,10 +80,10 @@ class StatsController(BaseController):
                 'date': h.date_str_to_datetime(revision_week_date),
                 'new_packages': 0})
 
-        return p.toolkit.render('ckanext/stats/index.html')
+        return p.toolkit.render('stats/index.html')
 
-    def leaderboard(self, id=None):
-        c = p.toolkit.c
-        c.solr_core_url = config.get('ckanext.stats.solr_core_url',
-                                     'http://solr.okfn.org/solr/ckan')
-        return p.toolkit.render('ckanext/stats/leaderboard.html')
+    # def leaderboard(self, id=None):
+    #     c = p.toolkit.c
+    #     c.solr_core_url = config.get('ckanext.stats.solr_core_url',
+    #                                  'http://solr.okfn.org/solr/ckan')
+    #     return p.toolkit.render('ckanext/stats/leaderboard.html')
