@@ -1,7 +1,12 @@
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
-import ckanext.ds_stats.helpers as ds_helpers
 from ckanext.ds_stats import DGA_CTRL, GA_API_CTRL, GA_CTRL
+from webhelpers.html import literal
+from ckanext.ds_stats.helpers import (most_popular_datasets,
+                                       popular_datasets,
+                                       single_popular_dataset,
+                                       month_option_title,
+                                       join_x, join_y, date_range)
 
 import ast
 import logging
@@ -22,7 +27,14 @@ import hashlib
 import threading
 import Queue
 
-log = logging.getLogger('ckanext.ds_stats.googleanalytics')
+log = logging.getLogger('ckanext.ds_stats')
+
+
+def custom_gravatar(*pargs, **kargs):
+    gravatar = h.gravatar(*pargs, **kargs)
+    pos = gravatar.find('/>')
+    gravatar = gravatar[:pos] + literal(' alt="User\'s profile gravatar" ') + gravatar[pos:]
+    return gravatar
 
 
 def _post_analytics(
@@ -107,7 +119,6 @@ class DsStatsPlugin(plugins.SingletonPlugin):
             toolkit.add_public_directory(config_, 'public_legacy')
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('fanstatic', 'ds_stats')
-        toolkit.add_resource('public/ckanext/stats', 'ckanext_ds_stats')
 
     # IRoutes
 
@@ -174,17 +185,70 @@ class DsStatsPlugin(plugins.SingletonPlugin):
             controller=GA_CTRL,
             action='view'
         )
-        return map
+        map.connect(
+            '/site-usage',
+            controller='ckanext.ga_report.controller:GaReport',
+            action='index'
+        )
+        map.connect(
+            '/site-usage_{month}.csv',
+            controller='ckanext.ga_report.controller:GaReport',
+            action='csv'
+        )
+        map.connect(
+            '/site-usage/downloads',
+            controller='ckanext.ga_report.controller:GaReport',
+            action='downloads'
+        )
+        map.connect(
+            '/site-usage/downloads_{month}.csv',
+            controller='ckanext.ga_report.controller:GaReport',
+            action='csv_downloads'
+        )
+
+        # GaDatasetReport
+        map.connect(
+            '/site-usage/publisher',
+            controller='ckanext.ga_report.controller:GaDatasetReport',
+            action='publishers'
+        )
+        map.connect(
+            '/site-usage/publishers_{month}.csv',
+            controller='ckanext.ga_report.controller:GaDatasetReport',
+            action='publisher_csv'
+        )
+        map.connect(
+            '/site-usage/dataset/datasets_{id}_{month}.csv',
+            controller='ckanext.ga_report.controller:GaDatasetReport',
+            action='dataset_csv'
+        )
+        map.connect(
+            '/site-usage/dataset',
+            controller='ckanext.ga_report.controller:GaDatasetReport',
+            action='read'
+        )
+        map.connect(
+            '/site-usage/dataset/{id}',
+            controller='ckanext.ga_report.controller:GaDatasetReport',
+            action='read_publisher'
+        )
         return map
 
     # ITemplateHelpers
 
     def get_helpers(self):
-        ckanext_helpers = ds_helpers.get_helpers()
-        print '111111 ckanext_helpers = {0}'.format(ckanext_helpers)
-        ckanext_helpers['googleanalytics_header'] = self.googleanalytics_header
-        print '222222 ckanext_helpers = {0}'.format(ckanext_helpers)
-        return ckanext_helpers
+        return {
+            'date_range': date_range,
+            'googleanalytics_header': self.googleanalytics_header,
+            'ga_report_installed': lambda: True,
+            'popular_datasets': popular_datasets,
+            'most_popular_datasets': most_popular_datasets,
+            'single_popular_dataset': single_popular_dataset,
+            'month_option_title': month_option_title,
+            'gravatar': custom_gravatar,
+            'join_x': join_x,
+            'join_y': join_y,
+        }
 
     # IConfigurable
 
@@ -213,10 +277,8 @@ class DsStatsPlugin(plugins.SingletonPlugin):
         if self.googleanalytics_linked_domains:
             self.googleanalytics_fields['allowLinker'] = 'true'
 
-        self.googleanalytics_javascript_url = h.url_for_static(
-                '/scripts/ckanext-googleanalytics.js')
-
-        print '!!!!!!!!!!!!!! self.googleanalytics_javascript_url = {0}'.format(self.googleanalytics_javascript_url)
+        # self.googleanalytics_javascript_url = h.url_for_static(
+        #         '/scripts/ckanext-googleanalytics.js')
 
         # If resource_prefix is not in config file then write the default value
         # to the config dict, otherwise templates seem to get 'true' when they

@@ -8,7 +8,6 @@ import Queue
 
 class StatsController(BaseController):
     def index(self):
-        print '!!!!!!!!!!!!!!! Hello from idex'
         c = p.toolkit.c
         stats = stats_lib.Stats()
         rev_stats = stats_lib.RevisionStats()
