@@ -84,6 +84,13 @@ setup(
 
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan
+
+        [paste.paster_command]
+        initdb-ga = ckanext.ds_stats.command:InitDBGA
+        loadanalytics-ga = ckanext.ds_stats.command:LoadAnalyticsGA
+        initdb-ga-report = ckanext.ds_stats.command:InitDBGaReport
+        loadanalytics-ga-report = ckanext.ds_stats.command:LoadAnalyticsGaReport
+        fixtimeperiods = ckanext.ds_stats.command:FixTimePeriods
     ''',
 
     # If you are changing from the default layout of your extension, you may

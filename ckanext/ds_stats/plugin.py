@@ -15,6 +15,7 @@ import commands
 import dbutil
 import paste.deploy.converters as converters
 from ckan.lib.base import c
+from ckan.plugins import toolkit as tk
 import ckan.lib.helpers as h
 from routes.mapper import SubMapper, Mapper as _Mapper
 from pylons import config
@@ -28,6 +29,7 @@ import threading
 import Queue
 
 log = logging.getLogger('ckanext.ds_stats')
+# c = tk.c
 
 
 def custom_gravatar(*pargs, **kargs):
@@ -258,47 +260,47 @@ class DsStatsPlugin(plugins.SingletonPlugin):
         See IConfigurable.
 
         '''
-        if 'googleanalytics.id' not in config:
-            msg = "Missing googleanalytics.id in config"
-            raise GoogleAnalyticsException(msg)
-        self.googleanalytics_id = config['googleanalytics.id']
-        self.googleanalytics_domain = config.get(
-                'googleanalytics.domain', 'auto')
-        self.googleanalytics_fields = ast.literal_eval(config.get(
-            'googleanalytics.fields', '{}'))
+        if 'googleanalytics.id' in config:
+            # msg = "Missing googleanalytics.id in config"
+            # raise GoogleAnalyticsException(msg)
+            self.googleanalytics_id = config['googleanalytics.id']
+            self.googleanalytics_domain = config.get(
+                    'googleanalytics.domain', 'auto')
+            self.googleanalytics_fields = ast.literal_eval(config.get(
+                'googleanalytics.fields', '{}'))
 
-        googleanalytics_linked_domains = config.get(
-            'googleanalytics.linked_domains', ''
-        )
-        self.googleanalytics_linked_domains = [
-            x.strip() for x in googleanalytics_linked_domains.split(',') if x
-        ]
+            googleanalytics_linked_domains = config.get(
+                'googleanalytics.linked_domains', ''
+            )
+            self.googleanalytics_linked_domains = [
+                x.strip() for x in googleanalytics_linked_domains.split(',') if x
+            ]
 
-        if self.googleanalytics_linked_domains:
-            self.googleanalytics_fields['allowLinker'] = 'true'
+            if self.googleanalytics_linked_domains:
+                self.googleanalytics_fields['allowLinker'] = 'true'
 
-        # self.googleanalytics_javascript_url = h.url_for_static(
-        #         '/scripts/ckanext-googleanalytics.js')
+            # self.googleanalytics_javascript_url = h.url_for_static(
+            #         '/scripts/ckanext-googleanalytics.js')
 
-        # If resource_prefix is not in config file then write the default value
-        # to the config dict, otherwise templates seem to get 'true' when they
-        # try to read resource_prefix from config.
-        if 'googleanalytics_resource_prefix' not in config:
-            config['googleanalytics_resource_prefix'] = (
-                    commands.DEFAULT_RESOURCE_URL_TAG)
-        self.googleanalytics_resource_prefix = config[
-            'googleanalytics_resource_prefix']
+            # If resource_prefix is not in config file then write the default value
+            # to the config dict, otherwise templates seem to get 'true' when they
+            # try to read resource_prefix from config.
+            if 'googleanalytics_resource_prefix' not in config:
+                config['googleanalytics_resource_prefix'] = (
+                        commands.DEFAULT_RESOURCE_URL_TAG)
+            self.googleanalytics_resource_prefix = config[
+                'googleanalytics_resource_prefix']
 
-        self.show_downloads = converters.asbool(
-            config.get('googleanalytics.show_downloads', True))
-        self.track_events = converters.asbool(
-            config.get('googleanalytics.track_events', False))
+            self.show_downloads = converters.asbool(
+                config.get('googleanalytics.show_downloads', True))
+            self.track_events = converters.asbool(
+                config.get('googleanalytics.track_events', False))
 
-        # spawn a pool of 5 threads, and pass them queue instance
-        for i in range(5):
-            t = AnalyticsPostThread(self.analytics_queue)
-            t.setDaemon(True)
-            t.start()
+            # spawn a pool of 5 threads, and pass them queue instance
+            for i in range(5):
+                t = AnalyticsPostThread(self.analytics_queue)
+                t.setDaemon(True)
+                t.start()
 
     def googleanalytics_header(self):
         '''Render the googleanalytics_header snippet for CKAN 2.0 templates.
@@ -308,14 +310,15 @@ class DsStatsPlugin(plugins.SingletonPlugin):
         templates in this extension, see ITemplateHelpers.
 
         '''
-        data = {
-            'googleanalytics_id': self.googleanalytics_id,
-            'googleanalytics_domain': self.googleanalytics_domain,
-            'googleanalytics_fields': str(self.googleanalytics_fields),
-            'googleanalytics_linked_domains': self.googleanalytics_linked_domains
-        }
-        return toolkit.render_snippet(
-            'googleanalytics/snippets/googleanalytics_header.html', data)
+        if config.get('googleanalytics.id', ''):
+            data = {
+                'googleanalytics_id': self.googleanalytics_id,
+                'googleanalytics_domain': self.googleanalytics_domain,
+                'googleanalytics_fields': str(self.googleanalytics_fields),
+                'googleanalytics_linked_domains': self.googleanalytics_linked_domains
+            }
+            return toolkit.render_snippet(
+                'googleanalytics/snippets/googleanalytics_header.html', data)
 
     def modify_resource_download_route(self, map):
         '''Modifies resource_download method in related controller
