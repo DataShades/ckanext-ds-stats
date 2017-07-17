@@ -47,7 +47,8 @@ class Stats(object):
                          func.count(rating.c.rating).desc()).\
                 limit(limit)
             res_ids = model.Session.execute(sql).fetchall()
-            return [(model.Session.query(model.Package).get(unicode(pkg_id)), avg, num) for pkg_id, avg, num in res_ids]
+            return [(model.Session.query(model.Package).get(unicode(pkg_id)),
+                     avg, num) for pkg_id, avg, num in res_ids]
 
         if cache_enabled:
             key = 'top_rated_packages_limit_%s' % str(limit)
@@ -72,13 +73,15 @@ class Stats(object):
                 order_by(func.count(package_revision.c.revision_id).desc()). \
                 limit(limit)
             res_ids = model.Session.execute(s).fetchall()
-            return [(model.Session.query(model.Package).get(unicode(pkg_id)), val) for pkg_id, val in res_ids]
+            return [(model.Session.query(model.Package).get(unicode(pkg_id)),
+                     val) for pkg_id, val in res_ids]
 
         if cache_enabled:
             key = 'most_edited_packages_limit_%s' % str(limit)
-            res_pkgs = our_cache.get_value(key=key,
-                                           createfunc=fetch_most_edited_packages,
-                                           expiretime=cache_default_timeout)
+            res_pkgs = our_cache.get_value(
+                key=key,
+                createfunc=fetch_most_edited_packages,
+                expiretime=cache_default_timeout)
         else:
             res_pkgs = fetch_most_edited_packages()
 
@@ -98,7 +101,8 @@ class Stats(object):
                 limit(limit)
 
             res_ids = model.Session.execute(s).fetchall()
-            return [(model.Session.query(model.Group).get(unicode(group_id)), val) for group_id, val in res_ids]
+            return [(model.Session.query(model.Group).get(unicode(group_id)),
+                     val) for group_id, val in res_ids]
 
         if cache_enabled:
             key = 'largest_groups_limit_%s' % str(limit)
@@ -120,8 +124,8 @@ class Stats(object):
               where package.state='active'\
               group by package.owner_org,\"group\".name, package.private \
               order by \"group\".name, package.private;").fetchall()
-            return [(model.Session.query(model.Group).get(unicode(group_id)), private, val) for group_id, private, val
-                    in res]
+            return [(model.Session.query(model.Group).get(unicode(group_id)),
+                     private, val) for group_id, private, val in res]
 
         if cache_enabled:
             key = 'fetch_by_org'
@@ -139,7 +143,8 @@ class Stats(object):
         def fetch_res_by_org():
             connection = model.Session.connection()
             reses = connection.execute("select owner_org,format,count(*) from \
-            resource inner join package on resource.package_id = package.id group by owner_org,format order by count desc;").fetchall()
+            resource inner join package on resource.package_id = package.id \
+            group by owner_org,format order by count desc;").fetchall()
             group_ids = []
             group_tab = {}
             group_spatial = {}
@@ -150,16 +155,20 @@ class Stats(object):
                     group_tab[group_id] = 0
                     group_spatial[group_id] = 0
                     group_other[group_id] = 0
-                if re.search('xls|csv|ms-excel|spreadsheetml.sheet|zip|netcdf', format, re.IGNORECASE):
+                if re.search('xls|csv|ms-excel|spreadsheetml.sheet|zip|netcdf',
+                             format, re.IGNORECASE):
                     group_tab[group_id] = group_tab[group_id] + count
-                elif re.search('wms|wfs|wcs|shp|kml|kmz', format, re.IGNORECASE):
+                elif re.search('wms|wfs|wcs|shp|kml|kmz', format,
+                               re.IGNORECASE):
                     group_spatial[group_id] = group_spatial[group_id] + count
                 else:
                     group_other[group_id] = group_other[group_id] + count
             return [
-                (model.Session.query(model.Group).get(unicode(group_id)), group_tab[group_id], group_spatial[group_id],
-                 group_other[group_id], group_tab[group_id] + group_spatial[group_id] + group_other[group_id]) for
-                group_id in group_ids]
+                (model.Session.query(model.Group).get(unicode(group_id)),
+                 group_tab[group_id], group_spatial[group_id],
+                 group_other[group_id],
+                 group_tab[group_id] + group_spatial[group_id] +
+                 group_other[group_id]) for group_id in group_ids]
 
         if cache_enabled:
             key = 'res_by_org'
@@ -179,13 +188,14 @@ class Stats(object):
             res = connection.execute("select package.owner_org, count(*) from package \
             inner join (select distinct package_id from resource) as r on package.id = r.package_id \
             inner join \"group\" on package.owner_org = \"group\".id \
-                    inner join (select distinct object_id from activity where activity.timestamp > (now() - interval '60 day')) \
-                    latestactivities on latestactivities.object_id = package.id \
-                    where package.state='active' \
-                    and package.private = 'f' \
-                    group by package.owner_org \
-                    order by count(*) desc;").fetchall();
-            return [(model.Session.query(model.Group).get(unicode(group_id)), val) for group_id, val in res]
+            inner join (select distinct object_id from activity where activity.timestamp > (now() - interval '60 day')) \
+            latestactivities on latestactivities.object_id = package.id \
+            where package.state='active' \
+            and package.private = 'f' \
+            group by package.owner_org \
+            order by count(*) desc;").fetchall()
+            return [(model.Session.query(model.Group).get(unicode(group_id)),
+                     val) for group_id, val in res]
 
         if cache_enabled:
             key = 'top_active_orgs'
@@ -209,7 +219,8 @@ class Stats(object):
             userid_count = query.filter(model.Package.state == 'active')\
                                 .filter(model.Package.private == False)\
                                 .group_by(model.Package.creator_user_id)\
-                                .order_by(func.count(model.Package.creator_user_id).desc())\
+                                .order_by(func.count(
+                                    model.Package.creator_user_id).desc())\
                                 .limit(limit).all()
             return [
                 (model.Session.query(model.User).get(unicode(user_id)), count)
@@ -231,9 +242,11 @@ class Stats(object):
         def fetch_summary_stats():
             connection = model.Session.connection()
             try:
-                from ckanext.datastore.db import get_all_resources_ids_in_datastore
+                from ckanext.datastore.db import (
+                    get_all_resources_ids_in_datastore)
             except ImportError:
-                from ckanext.datastore.backend import get_all_resources_ids_in_datastore
+                from ckanext.datastore.backend import (
+                    get_all_resources_ids_in_datastore)
 
             result = []
             result.append(('Total Datasets',
@@ -328,8 +341,8 @@ class Stats(object):
             return [
                 (
                     datetime2date(timestamp),
-                    model.Session.query(model.Package).get(unicode(package_id)),
-                    activity_type
+                    model.Session.query(model.Package).get(
+                        unicode(package_id)), activity_type
                 )
                 for timestamp, package_id, activity_type in result]
 
@@ -363,8 +376,8 @@ class RevisionStats(object):
         @param weeks_ago: specify how many weeks ago to give count for
                           (0 = this week so far)
         '''
-        return TODAY - datetime.timedelta(days=
-                                          datetime.date.weekday(date_) + 7 * weeks_ago)
+        return TODAY - datetime.timedelta(
+            days=datetime.date.weekday(TODAY) + 7 * weeks_ago)
 
     @classmethod
     def get_week_dates(cls, weeks_ago):
@@ -451,9 +464,11 @@ class RevisionStats(object):
             cls._cumulative_num_pkgs = 0
             new_pkgs = []
 
-            def build_weekly_stats(week_commences, new_pkg_ids, deleted_pkg_ids):
+            def build_weekly_stats(week_commences, new_pkg_ids,
+                                   deleted_pkg_ids):
                 num_pkgs = len(new_pkg_ids)
-                new_pkgs.extend([model.Session.query(model.Package).get(id).name for id in new_pkg_ids])
+                new_pkgs.extend([model.Session.query(
+                    model.Package).get(id).name for id in new_pkg_ids])
 
                 cls._cumulative_num_pkgs += num_pkgs
                 return (week_commences.strftime(DATE_FORMAT),
@@ -461,18 +476,21 @@ class RevisionStats(object):
 
             week_ends = first_date
             new_package_week_index = 0
-            weekly_numbers = []  # [(week_commences, num_packages, cumulative_num_pkgs])]
+            # [(week_commences, num_packages, cumulative_num_pkgs])]
+            weekly_numbers = []
             while week_ends <= TODAY:
                 week_commences = week_ends
                 week_ends = week_commences + datetime.timedelta(days=7)
-                if datetime.datetime.strptime(new_packages_by_week[new_package_week_index][0],
-                                              DATE_FORMAT).date() == week_commences:
+                if datetime.datetime.strptime(
+                        new_packages_by_week[new_package_week_index][0],
+                        DATE_FORMAT).date() == week_commences:
                     new_pkg_ids = new_packages_by_week[new_package_week_index][1]
                     new_package_week_index += 1
                 else:
                     new_pkg_ids = []
 
-                weekly_numbers.append(build_weekly_stats(week_commences, new_pkg_ids, []))
+                weekly_numbers.append(build_weekly_stats(week_commences,
+                                                         new_pkg_ids, []))
             # just check we got to the end of each count
             assert new_package_week_index == len(new_packages_by_week)
             return weekly_numbers
@@ -519,12 +537,14 @@ class RevisionStats(object):
             for pkg_id, date_field in objects:
                 date_ = get_date(date_field)
                 if date_ >= week_ends:
-                    weekly_pkg_ids.append(build_weekly_stats(week_commences, pkg_id_stack))
+                    weekly_pkg_ids.append(build_weekly_stats(week_commences,
+                                                             pkg_id_stack))
                     pkg_id_stack = []
                     week_commences = week_ends
                     week_ends = week_commences + datetime.timedelta(days=7)
                 pkg_id_stack.append(pkg_id)
-            weekly_pkg_ids.append(build_weekly_stats(week_commences, pkg_id_stack))
+            weekly_pkg_ids.append(build_weekly_stats(week_commences,
+                                                     pkg_id_stack))
             while week_ends <= TODAY:
                 week_commences = week_ends
                 week_ends = week_commences + datetime.timedelta(days=7)
@@ -533,7 +553,8 @@ class RevisionStats(object):
 
         if cache_enabled:
             week_commences = cls.get_date_week_started(TODAY)
-            key = '%s_by_week_%s' % (cls._object_type, week_commences.strftime(DATE_FORMAT))
+            key = '%s_by_week_%s' % (cls._object_type,
+                                     week_commences.strftime(DATE_FORMAT))
             objects_by_week_ = our_cache.get_value(key=key,
                                                    createfunc=objects_by_week)
         else:
@@ -574,5 +595,5 @@ class RevisionStats(object):
         if type_ in ('package_revision_rate', 'package_addition_rate'):
             return len(object_ids)
         elif type_ in ('new_packages', 'deleted_packages'):
-            return [model.Session.query(model.Package).get(pkg_id) \
+            return [model.Session.query(model.Package).get(pkg_id)
                     for pkg_id in object_ids]

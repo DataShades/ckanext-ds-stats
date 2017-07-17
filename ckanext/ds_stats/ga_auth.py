@@ -45,8 +45,8 @@ def get_profile_id(service):
     if not accounts.get('items'):
         return None
 
-    accountName = config.get('googleanalytics.account')
-    webPropertyId = config.get('googleanalytics.id')
+    accountName = config.get('ds_stats.ga.account')
+    webPropertyId = config.get('ds_stats.ga.id')
     for acc in accounts.get('items'):
         if acc.get('name') == accountName:
             accountId = acc.get('id')

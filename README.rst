@@ -2,7 +2,7 @@
 ckanext-ds-stats
 =============
 
-**CKAN Version:** 1.7.1+
+**CKAN Version:** 2.0+
 
 
 Overview
@@ -35,13 +35,13 @@ To install ckanext-ds-stats:
 
 2. Ensure you development.ini (or similar) contains the info about your Google Analytics account and configuration::
 
-    googleanalytics.id = UA-1010101-1
-    googleanalytics.account = Account name (e.g. data.gov.uk, see top level item at https://www.google.com/analytics)
-    googleanalytics.token.filepath = ~/pyenv/credentials.json
-    ga-report.period = monthly
-    ga-report.bounce_url = /
+    ds_stats.ga.id = UA-1010101-1
+    ds_stats.ga.account = Account name (e.g. data.gov.uk, see top level item at https://www.google.com/analytics)
+    ds_stats.ga.token.filepath = ~/pyenv/credentials.json
+    ds_stats.ga-report.period = monthly
+    ds_stats.ga-report.bounce_url = /
 
-    The ga-report.bounce_url specifies a particular path to record the bounce rate for. Typically it is / (the home page).
+The ds_stats.ga-report.bounce_url specifies a particular path to record the bounce rate for. Typically it is / (the home page).
 
 3. Set up this extension's database tables using a paster command. (Ensure your CKAN pyenv is still activated, run the command from ``src/ckanext-ga-report``, alter the ``--config`` option to point to your site config file)::
 
@@ -73,15 +73,19 @@ Before you can access the data, you need to set up the OAUTH details which you c
 
 Now ensure you reference the correct path to your credentials.json in your CKAN config file (e.g. development.ini)::
 
- googleanalytics.token.filepath = ~/pyenv/credentials.json
+    ds_stats.ga.token.filepath = ~/pyenv/credentials.json
 
 
 Tutorial
 --------
 
-Download some GA data and store it in CKAN's database. (Ensure your CKAN pyenv is still activated, run the command from ``src/ckanext-ga-report``, alter the ``--config`` option to point to your site config file) and specifying the name of your auth file (token.dat by default) from the previous step::
+Import Google stats by running the following command (Ensure your CKAN pyenv is still activated, run the command from ``ckanext-ds-stats``, alter the ``--config`` option to point to your site config file) and specifying the name of your credentials file::
 
- $ paster loadanalytics latest --config=../ckan/development.ini
+    $ paster loadanalytics-ga credentials_file --config=../ckan/development.ini
+
+Download some GA data and store it in CKAN's database. (Ensure your CKAN pyenv is still activated, run the command from ``ckanext-ds-stats``, alter the ``--config`` option to point to your site config file)::
+
+    $ paster loadanalytics-ga-report latest --config=../ckan/development.ini
 
 The value after the token file is how much data you want to retrieve, this can be
 
@@ -103,17 +107,3 @@ do::
     cd ckanext-ds-stats
     python setup.py develop
     pip install -r dev-requirements.txt
-
-
------------------
-Running the Tests
------------------
-
-To run the tests, do::
-
-    nosetests --nologcapture --with-pylons=test.ini
-
-To run the tests and produce a coverage report, first make sure you have
-coverage installed in your virtualenv (``pip install coverage``) then run::
-
-    nosetests --nologcapture --with-pylons=test.ini --with-coverage --cover-package=ckanext.ds-stats --cover-inclusive --cover-erase --cover-tests

@@ -3,7 +3,6 @@ from sqlalchemy.sql import select, text
 from sqlalchemy import func
 
 import ckan.model as model
-# from ckan.model.authz import PSEUDO_USER__VISITOR
 from ckan.lib.base import *
 
 cached_tables = {}
@@ -42,16 +41,13 @@ def _update_visits(table_name, item_id, recently, ever):
     connection = model.Session.connection()
     count = connection.execute(s).fetchone()
     if count and count[0]:
-        connection.execute(stats.update()\
-            .where(id_col == item_id)\
-            .values(visits_recently=recently,
-                    visits_ever=ever))
+        connection.execute(stats.update().where(id_col == item_id)
+                           .values(visits_recently=recently, visits_ever=ever))
     else:
         values = {id_col_name: item_id,
                   'visits_recently': recently,
                   'visits_ever': ever}
-        connection.execute(stats.insert()\
-                           .values(**values))
+        connection.execute(stats.insert().values(**values))
 
 
 def update_resource_visits(resource_id, recently, ever):
@@ -76,25 +72,26 @@ def get_resource_visits_for_url(url):
         AND resource.url = :url"""), url=url).fetchone()
     return count and count[0] or ""
 
+
 """ get_top_packages is broken, and needs to be rewritten to work with
 CKAN 2.*. This is because ckan.authz has been removed in CKAN 2.*
 
 See commit ffa86c010d5d25fa1881c6b915e48f3b44657612
 """
+
+
 def get_top_packages(limit=20):
     items = []
-    authorizer = Authorizer()
-    q = authorizer.authorized_query(PSEUDO_USER__VISITOR,
-                                    model.Package)
     connection = model.Session.connection()
     package_stats = get_table('package_stats')
     s = select([package_stats.c.package_id,
                 package_stats.c.visits_recently,
                 package_stats.c.visits_ever])\
-                .order_by(package_stats.c.visits_recently.desc())
+        .order_by(package_stats.c.visits_recently.desc())
     res = connection.execute(s).fetchmany(limit)
     for package_id, recent, ever in res:
-        item = q.filter("package.id = '%s'" % package_id)
+        item = model.Session.query(model.Package)\
+               .filter("package.id = '%s'" % package_id)
         if not item.count():
             continue
         items.append((item.first(), recent, ever))
@@ -108,10 +105,12 @@ def get_top_resources(limit=20):
     s = select([resource_stats.c.resource_id,
                 resource_stats.c.visits_recently,
                 resource_stats.c.visits_ever])\
-                .order_by(resource_stats.c.visits_recently.desc())
+        .order_by(resource_stats.c.visits_recently.desc())
     res = connection.execute(s).fetchmany(limit)
     for resource_id, recent, ever in res:
-        item = model.Session.query(model.Resource)\
+        item = model.Session.query(model.Resource, model.Package.name)\
+               .join(model.Package,
+                     model.Package.id == model.Resource.package_id)\
                .filter("resource.id = '%s'" % resource_id)
         if not item.count():
             continue

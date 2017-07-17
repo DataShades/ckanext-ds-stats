@@ -1,5 +1,5 @@
 import ckan.plugins as p
-from ckan.lib.base import BaseController, config
+from ckan.lib.base import BaseController
 import ckanext.ds_stats.stats as stats_lib
 import ckan.lib.helpers as h
 
@@ -58,7 +58,8 @@ class StatsController(BaseController):
             revision_week_date = week_queue.get()
             while revision_week_date != week_date:
                 c.new_datasets.append(
-                    '[new Date(%s), %s]' % (revision_week_date.replace('-', ','), 0))
+                    '[new Date(%s), %s]' % (revision_week_date.replace(
+                                                                '-', ','), 0))
                 c.raw_new_datasets.append({
                     'date': h.date_str_to_datetime(revision_week_date),
                     'new_packages': 0})
@@ -74,15 +75,10 @@ class StatsController(BaseController):
         while not week_queue.empty():
             revision_week_date = week_queue.get()
             c.new_datasets.append(
-                '[new Date(%s), %s]' % (revision_week_date.replace('-', ','), 0))
+                '[new Date(%s), %s]' % (revision_week_date.replace(
+                                                                '-', ','), 0))
             c.raw_new_datasets.append({
                 'date': h.date_str_to_datetime(revision_week_date),
                 'new_packages': 0})
 
         return p.toolkit.render('stats/index.html')
-
-    # def leaderboard(self, id=None):
-    #     c = p.toolkit.c
-    #     c.solr_core_url = config.get('ckanext.stats.solr_core_url',
-    #                                  'http://solr.okfn.org/solr/ckan')
-    #     return p.toolkit.render('ckanext/stats/leaderboard.html')

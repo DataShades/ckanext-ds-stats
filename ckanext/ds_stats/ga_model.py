@@ -1,11 +1,10 @@
 import re
 import uuid
 
-from sqlalchemy import Table, Column, MetaData, ForeignKey
+from sqlalchemy import Table, Column, MetaData
 from sqlalchemy import types
-from sqlalchemy.sql import select, or_, func
-from sqlalchemy.orm import mapper, relation
-from sqlalchemy import func, or_
+from sqlalchemy.orm import mapper
+from sqlalchemy import or_
 
 import ckan.model as model
 import ckan.model.group as group
@@ -13,53 +12,59 @@ from ckan.lib.base import *
 
 log = __import__('logging').getLogger(__name__)
 
+
 def make_uuid():
     return unicode(uuid.uuid4())
 
+
 metadata = MetaData()
+
 
 class GA_Url(object):
 
     def __init__(self, **kwargs):
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             setattr(self, k, v)
 
+
 url_table = Table('ga_url', metadata,
-                      Column('id', types.UnicodeText, primary_key=True,
-                             default=make_uuid),
-                      Column('period_name', types.UnicodeText),
-                      Column('period_complete_day', types.Integer),
-                      Column('pageviews', types.UnicodeText),
-                      Column('visits', types.UnicodeText),
-                      Column('url', types.UnicodeText),
-                      Column('department_id', types.UnicodeText),
-                      Column('package_id', types.UnicodeText),
-                )
+                  Column('id', types.UnicodeText, primary_key=True,
+                         default=make_uuid),
+                  Column('period_name', types.UnicodeText),
+                  Column('period_complete_day', types.Integer),
+                  Column('pageviews', types.UnicodeText),
+                  Column('visits', types.UnicodeText),
+                  Column('url', types.UnicodeText),
+                  Column('department_id', types.UnicodeText),
+                  Column('package_id', types.UnicodeText),
+                  )
 mapper(GA_Url, url_table)
 
 
 class GA_Stat(object):
 
     def __init__(self, **kwargs):
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             setattr(self, k, v)
 
+
 stat_table = Table('ga_stat', metadata,
-                  Column('id', types.UnicodeText, primary_key=True,
-                         default=make_uuid),
-                  Column('period_name', types.UnicodeText),
-                  Column('period_complete_day', types.UnicodeText),
-                  Column('stat_name', types.UnicodeText),
-                  Column('key', types.UnicodeText),
-                  Column('value', types.UnicodeText), )
+                   Column('id', types.UnicodeText, primary_key=True,
+                          default=make_uuid),
+                   Column('period_name', types.UnicodeText),
+                   Column('period_complete_day', types.UnicodeText),
+                   Column('stat_name', types.UnicodeText),
+                   Column('key', types.UnicodeText),
+                   Column('value', types.UnicodeText), )
 mapper(GA_Stat, stat_table)
 
 
 class GA_Publisher(object):
 
     def __init__(self, **kwargs):
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             setattr(self, k, v)
+
 
 pub_table = Table('ga_publisher', metadata,
                   Column('id', types.UnicodeText, primary_key=True,
@@ -71,26 +76,26 @@ pub_table = Table('ga_publisher', metadata,
                   Column('toplevel', types.Boolean, default=False),
                   Column('subpublishercount', types.Integer, default=0),
                   Column('parent', types.UnicodeText),
-)
+                  )
 mapper(GA_Publisher, pub_table)
 
 
 class GA_ReferralStat(object):
 
     def __init__(self, **kwargs):
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             setattr(self, k, v)
 
-referrer_table = Table('ga_referrer', metadata,
-                      Column('id', types.UnicodeText, primary_key=True,
-                             default=make_uuid),
-                      Column('period_name', types.UnicodeText),
-                      Column('source', types.UnicodeText),
-                      Column('url', types.UnicodeText),
-                      Column('count', types.Integer),
-                )
-mapper(GA_ReferralStat, referrer_table)
 
+referrer_table = Table('ga_referrer', metadata,
+                       Column('id', types.UnicodeText, primary_key=True,
+                              default=make_uuid),
+                       Column('period_name', types.UnicodeText),
+                       Column('source', types.UnicodeText),
+                       Column('url', types.UnicodeText),
+                       Column('count', types.Integer),
+                       )
+mapper(GA_ReferralStat, referrer_table)
 
 
 def init_tables():
@@ -115,7 +120,7 @@ def _normalize_url(url):
     >>> normalize_url('http://data.gov.uk/data/dataset/weekly_fuel_prices')
     '/data/dataset/weekly_fuel_prices'
     '''
-    return url #'/' + '/'.join(url.split('/')[3:])
+    return url  # '/' + '/'.join(url.split('/')[3:])
 
 
 def _get_package_and_publisher(url):
@@ -125,16 +130,22 @@ def _get_package_and_publisher(url):
     dataset_match = re.match('/data/dataset/([^/]+)(/.*)?', url)
     if dataset_match:
         dataset_ref = dataset_match.groups()[0]
-        dataset = model.Session.query(model.Package).filter(or_(model.Package.name == dataset_ref,model.Package.id == dataset_ref)).first()
+        dataset = model.Session.query(model.Package).filter(or_(
+            model.Package.name == dataset_ref,
+            model.Package.id == dataset_ref)).first()
         # search historical data as a fallback only
         if not dataset:
-            dataset_rev = model.Session.query(model.PackageRevision).filter(or_(model.PackageRevision.name == dataset_ref,model.PackageRevision.id == dataset_ref)).first()
+            dataset_rev = model.Session.query(model.PackageRevision).filter(
+                or_(model.PackageRevision.name == dataset_ref,
+                    model.PackageRevision.id == dataset_ref)).first()
             if dataset_rev:
-                dataset = model.Session.query(model.Package).filter(model.Package.id == dataset_rev.id).first()
+                dataset = model.Session.query(model.Package).filter(
+                    model.Package.id == dataset_rev.id).first()
         if dataset:
-            owner_org = model.Session.query(group.Group).filter(group.Group.id == dataset.owner_org).first()
+            owner_org = model.Session.query(group.Group).filter(
+                group.Group.id == dataset.owner_org).first()
             if owner_org:
-                return dataset.name,owner_org.name
+                return dataset.name, owner_org.name
         log.debug('dataset '+dataset_ref+' not found')
         return dataset_ref, None
     else:
@@ -143,12 +154,13 @@ def _get_package_and_publisher(url):
             return None, publisher_match.groups()[0]
     return None, None
 
+
 def update_sitewide_stats(period_name, stat_name, data, period_complete_day):
-    for k,v in data.iteritems():
+    for k, v in data.iteritems():
         item = model.Session.query(GA_Stat).\
-            filter(GA_Stat.period_name==period_name).\
-            filter(GA_Stat.key==k).\
-            filter(GA_Stat.stat_name==stat_name).first()
+            filter(GA_Stat.period_name == period_name).\
+            filter(GA_Stat.key == k).\
+            filter(GA_Stat.stat_name == stat_name).first()
         if item:
             item.period_name = period_name
             item.key = k
@@ -157,20 +169,21 @@ def update_sitewide_stats(period_name, stat_name, data, period_complete_day):
             model.Session.add(item)
         else:
             # create the row
-            values = {'id': make_uuid(),
-                     'period_name': period_name,
-                     'period_complete_day': period_complete_day,
-                     'key': k,
-                     'value': v,
-                     'stat_name': stat_name
-                     }
+            values = {
+                'id': make_uuid(),
+                'period_name': period_name,
+                'period_complete_day': period_complete_day,
+                'key': k,
+                'value': v,
+                'stat_name': stat_name
+                }
             model.Session.add(GA_Stat(**values))
         model.Session.commit()
 
 
 def pre_update_url_stats(period_name):
     q = model.Session.query(GA_Url).\
-        filter(GA_Url.period_name==period_name)
+        filter(GA_Url.period_name == period_name)
     log.debug("Deleting %d '%s' records" % (q.count(), period_name))
     q.delete()
 
@@ -183,6 +196,7 @@ def pre_update_url_stats(period_name):
     model.Session.commit()
     model.repo.commit_and_remove()
     log.debug('...done')
+
 
 def post_update_url_stats():
 
@@ -249,8 +263,8 @@ def update_url_stats(period_name, period_complete_day, data):
         if package:
             # TODO: [extract SA]
             url = '/data/dataset/'+package
-        old_visits = url_data.get(url,{'visits':0})['visits']
-        old_views = url_data.get(url,{'views':0})['views']
+        old_visits = url_data.get(url, {'visits': 0})['visits']
+        old_views = url_data.get(url, {'views': 0})['views']
         item['package'] = package
         item['publisher'] = publisher
         item['visits'] = int(old_visits) + int(visits)
@@ -268,8 +282,8 @@ def update_url_stats(period_name, period_complete_day, data):
         if progress_count % 100 == 0:
             log.debug('.. %d/%d done so far', progress_count, progress_total)
         item = model.Session.query(GA_Url).\
-            filter(GA_Url.period_name==period_name).\
-            filter(GA_Url.url==url).first()
+            filter(GA_Url.period_name == period_name).\
+            filter(GA_Url.url == url).first()
         if item:
             item.pageviews = item.pageviews + views
             item.visits = item.visits + visits
@@ -287,51 +301,52 @@ def update_url_stats(period_name, period_complete_day, data):
                       'visits': visits,
                       'department_id': publisher,
                       'package_id': package
-                     }
+                      }
             model.Session.add(GA_Url(**values))
         model.Session.commit()
 
         if package:
             old_pageviews, old_visits = 0, 0
             old = model.Session.query(GA_Url).\
-                filter(GA_Url.period_name=='All').\
-                filter(GA_Url.url==url).all()
+                filter(GA_Url.period_name == 'All').\
+                filter(GA_Url.url == url).all()
             old_pageviews = sum([int(o.pageviews) for o in old])
             old_visits = sum([int(o.visits) for o in old])
 
             entries = model.Session.query(GA_Url).\
-                filter(GA_Url.period_name!='All').\
-                filter(GA_Url.url==url).all()
-            values = {'id': make_uuid(),
-                      'period_name': 'All',
-                      'period_complete_day': 0,
-                      'url': url,
-                      'pageviews': sum([int(e.pageviews) for e in entries]) + int(old_pageviews),
-                      'visits': sum([int(e.visits or 0) for e in entries]) + int(old_visits),
-                      'department_id': publisher,
-                      'package_id': package
-                     }
+                filter(GA_Url.period_name != 'All').\
+                filter(GA_Url.url == url).all()
+            values = {
+                'id': make_uuid(),
+                'period_name': 'All',
+                'period_complete_day': 0,
+                'url': url,
+                'pageviews': sum(
+                    [int(e.pageviews) for e in entries]) + int(old_pageviews),
+                'visits': sum(
+                    [int(e.visits or 0) for e in entries]) + int(old_visits),
+                'department_id': publisher,
+                'package_id': package
+                }
 
             model.Session.add(GA_Url(**values))
             model.Session.commit()
 
 
-
-
 def update_social(period_name, data):
     # Clean up first.
     model.Session.query(GA_ReferralStat).\
-        filter(GA_ReferralStat.period_name==period_name).delete()
+        filter(GA_ReferralStat.period_name == period_name).delete()
 
-    for url,data in data.iteritems():
+    for url, data in data.iteritems():
         for entry in data:
             source = entry[0]
             count = entry[1]
 
             item = model.Session.query(GA_ReferralStat).\
-                filter(GA_ReferralStat.period_name==period_name).\
-                filter(GA_ReferralStat.source==source).\
-                filter(GA_ReferralStat.url==url).first()
+                filter(GA_ReferralStat.period_name == period_name).\
+                filter(GA_ReferralStat.source == source).\
+                filter(GA_ReferralStat.url == url).first()
             if item:
                 item.count = item.count + count
                 model.Session.add(item)
@@ -342,9 +357,10 @@ def update_social(period_name, data):
                           'source': source,
                           'url': url,
                           'count': count,
-                         }
+                          }
                 model.Session.add(GA_ReferralStat(**values))
             model.Session.commit()
+
 
 def update_publisher_stats(period_name):
     """
@@ -354,16 +370,17 @@ def update_publisher_stats(period_name):
     """
     toplevel = get_top_level()
     publishers = model.Session.query(model.Group).\
-        filter(model.Group.type=='organization').\
-        filter(model.Group.state=='active').all()
+        filter(model.Group.type == 'organization').\
+        filter(model.Group.state == 'active').all()
     for publisher in publishers:
-        views, visits, subpub = update_publisher(period_name, publisher, publisher.name)
+        views, visits, subpub = update_publisher(period_name, publisher,
+                                                 publisher.name)
         parent, parents = '', publisher.get_parent_groups(type='organization')
         if parents:
             parent = parents[0].name
         item = model.Session.query(GA_Publisher).\
-            filter(GA_Publisher.period_name==period_name).\
-            filter(GA_Publisher.publisher_name==publisher.name).first()
+            filter(GA_Publisher.period_name == period_name).\
+            filter(GA_Publisher.publisher_name == publisher.name).first()
         if item:
             item.views = views
             item.visits = visits
@@ -374,26 +391,27 @@ def update_publisher_stats(period_name):
             model.Session.add(item)
         else:
             # create the row
-            values = {'id': make_uuid(),
-                     'period_name': period_name,
-                     'publisher_name': publisher.name,
-                     'views': views,
-                     'visits': visits,
-                     'toplevel': publisher in toplevel,
-                     'subpublishercount': subpub,
-                     'parent': parent
-                     }
+            values = {
+                'id': make_uuid(),
+                'period_name': period_name,
+                'publisher_name': publisher.name,
+                'views': views,
+                'visits': visits,
+                'toplevel': publisher in toplevel,
+                'subpublishercount': subpub,
+                'parent': parent
+                }
             model.Session.add(GA_Publisher(**values))
         model.Session.commit()
 
 
 def update_publisher(period_name, pub, part=''):
-    views,visits,subpub = 0, 0, 0
+    views, visits, subpub = 0, 0, 0
     for publisher in go_down_tree(pub):
         subpub = subpub + 1
         items = model.Session.query(GA_Url).\
-                filter(GA_Url.period_name==period_name).\
-                filter(GA_Url.department_id==publisher.name).all()
+            filter(GA_Url.period_name == period_name).\
+            filter(GA_Url.department_id == publisher.name).all()
         for item in items:
             views = views + int(item.pageviews)
             visits = visits + int(item.visits)
@@ -404,24 +422,28 @@ def update_publisher(period_name, pub, part=''):
 def get_top_level():
     '''Returns the top level publishers.'''
     return model.Session.query(model.Group).\
-           outerjoin(model.Member, model.Member.table_id == model.Group.id and \
-                     model.Member.table_name == 'group' and \
-                     model.Member.state == 'active').\
-           filter(model.Member.id==None).\
-           filter(model.Group.type=='organization').\
-           order_by(model.Group.name).all()
+        outerjoin(model.Member, model.Member.table_id == model.Group.id and
+                  model.Member.table_name == 'group' and
+                  model.Member.state == 'active').\
+        filter(model.Member.id == None).\
+        filter(model.Group.type == 'organization').\
+        order_by(model.Group.name).all()
+
 
 def get_children(publisher):
-    '''Finds child publishers for the given publisher (object). (Not recursive i.e. returns one level)'''
+    '''Finds child publishers for the given publisher (object).
+     (Not recursive i.e. returns one level)'''
     return publisher.get_children_groups(type='organization')
 
+
 def go_down_tree(publisher):
-    '''Provided with a publisher object, it walks down the hierarchy and yields each publisher,
-    including the one you supply.'''
+    '''Provided with a publisher object, it walks down the hierarchy and
+     yields each publisher, including the one you supply.'''
     yield publisher
     for child in get_children(publisher):
         for grandchild in go_down_tree(child):
             yield grandchild
+
 
 def delete(period_name):
     '''
@@ -434,6 +456,7 @@ def delete(period_name):
             q = q.filter_by(period_name=period_name)
         q.delete()
     model.repo.commit_and_remove()
+
 
 def get_score_for_dataset(dataset_name):
     '''
@@ -449,17 +472,17 @@ def get_score_for_dataset(dataset_name):
 
     score = 0
     for period_name in period_names:
-        score /= 2 # previous periods are discounted by 50%
+        score /= 2  # previous periods are discounted by 50%
         entry = model.Session.query(GA_Url)\
-                .filter(GA_Url.period_name==period_name)\
-                .filter(GA_Url.package_id==dataset_name).first()
+            .filter(GA_Url.period_name == period_name)\
+            .filter(GA_Url.package_id == dataset_name).first()
         # score
         if entry:
             views = float(entry.pageviews)
             if entry.period_complete_day:
                 views_per_day = views / entry.period_complete_day
             else:
-                views_per_day = views / 15 # guess
+                views_per_day = views / 15  # guess
             score += views_per_day
 
     score = int(score * 100)

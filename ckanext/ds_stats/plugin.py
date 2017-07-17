@@ -1,13 +1,17 @@
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
-from ckanext.ds_stats import DGA_CTRL, GA_API_CTRL, GA_CTRL
 from webhelpers.html import literal
 from ckanext.ds_stats.helpers import (most_popular_datasets,
-                                       popular_datasets,
-                                       single_popular_dataset,
-                                       month_option_title,
-                                       join_x, join_y, date_range)
-
+                                      popular_datasets,
+                                      single_popular_dataset,
+                                      month_option_title,
+                                      join_x, join_y, date_range)
+from ckanext.ds_stats.ds_stats_routes import (
+    ga_enabled_routes_before_map,
+    ga_enabled_routes_after_map,
+    dga_stats_enabled_routes_after_map,
+    ga_report_enabled_routes_after_map
+)
 import ast
 import logging
 import urllib
@@ -15,9 +19,7 @@ import commands
 import dbutil
 import paste.deploy.converters as converters
 from ckan.lib.base import c
-from ckan.plugins import toolkit as tk
 import ckan.lib.helpers as h
-from routes.mapper import SubMapper, Mapper as _Mapper
 from pylons import config
 from ckan.controllers.package import PackageController
 
@@ -29,23 +31,23 @@ import threading
 import Queue
 
 log = logging.getLogger('ckanext.ds_stats')
-# c = tk.c
 
 
 def custom_gravatar(*pargs, **kargs):
     gravatar = h.gravatar(*pargs, **kargs)
     pos = gravatar.find('/>')
-    gravatar = gravatar[:pos] + literal(' alt="User\'s profile gravatar" ') + gravatar[pos:]
+    gravatar = gravatar[:pos] + literal(' alt="User\'s profile gravatar" ') +\
+        gravatar[pos:]
     return gravatar
 
 
 def _post_analytics(
         user, event_type, request_obj_type, request_function, request_id):
 
-    if config.get('googleanalytics.id'):
+    if config.get('ds_stats.ga.id'):
         data_dict = {
             "v": 1,
-            "tid": config.get('googleanalytics.id'),
+            "tid": config.get('ds_stats.ga.id'),
             "cid": hashlib.md5(c.user).hexdigest(),
             # customer id should be obfuscated
             "t": "event",
@@ -116,124 +118,20 @@ class DsStatsPlugin(plugins.SingletonPlugin):
 
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
-        if toolkit.asbool(config_.get('ckan.legacy_templates', False)):
-            toolkit.add_template_directory(config_, 'templates_legacy')
-            toolkit.add_public_directory(config_, 'public_legacy')
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('fanstatic', 'ds_stats')
 
     # IRoutes
 
     def before_map(self, map):
-        '''Add new routes that this extension's controllers handle.
-
-        See IRoutes.
-
-        '''
-        # Helpers to reduce code clutter
-        GET = dict(method=['GET'])
-        PUT = dict(method=['PUT'])
-        POST = dict(method=['POST'])
-        DELETE = dict(method=['DELETE'])
-        GET_POST = dict(method=['GET', 'POST'])
-        # intercept API calls that we want to capture analytics on
-        register_list = [
-            'package',
-            'dataset',
-            'resource',
-            'tag',
-            'group',
-            'related',
-            'revision',
-            'licenses',
-            'rating',
-            'user',
-            'activity'
-        ]
-        register_list_str = '|'.join(register_list)
-        # /api ver 3 or none
-        with SubMapper(map, controller=GA_API_CTRL, path_prefix='/api{ver:/3|}',
-                    ver='/3') as m:
-            m.connect('/action/{logic_function}', action='action',
-                      conditions=GET_POST)
-
-        # /api ver 1, 2, 3 or none
-        with SubMapper(map, controller=GA_API_CTRL, path_prefix='/api{ver:/1|/2|/3|}',
-                       ver='/1') as m:
-            m.connect('/search/{register}', action='search')
-
-        # /api/rest ver 1, 2 or none
-        with SubMapper(map, controller=GA_API_CTRL, path_prefix='/api{ver:/1|/2|}',
-                       ver='/1', requirements=dict(register=register_list_str)
-                       ) as m:
-
-            m.connect('/rest/{register}', action='list', conditions=GET)
-            m.connect('/rest/{register}', action='create', conditions=POST)
-            m.connect('/rest/{register}/{id}', action='show', conditions=GET)
-            m.connect('/rest/{register}/{id}', action='update', conditions=PUT)
-            m.connect('/rest/{register}/{id}', action='update', conditions=POST)
-            m.connect('/rest/{register}/{id}', action='delete', conditions=DELETE)
-
+        ga_enabled_routes_before_map(map)
         return map
 
     def after_map(self, map):
-        map.connect('stats', '/stats', controller=DGA_CTRL, action='index')
-        map.connect('stats_action', '/stats/{action}', controller=DGA_CTRL)
-
+        dga_stats_enabled_routes_after_map(map)
         self.modify_resource_download_route(map)
-        map.redirect("/analytics/package/top", "/analytics/dataset/top")
-        map.connect(
-            'analytics', '/analytics/dataset/top',
-            controller=GA_CTRL,
-            action='view'
-        )
-        map.connect(
-            '/site-usage',
-            controller='ckanext.ga_report.controller:GaReport',
-            action='index'
-        )
-        map.connect(
-            '/site-usage_{month}.csv',
-            controller='ckanext.ga_report.controller:GaReport',
-            action='csv'
-        )
-        map.connect(
-            '/site-usage/downloads',
-            controller='ckanext.ga_report.controller:GaReport',
-            action='downloads'
-        )
-        map.connect(
-            '/site-usage/downloads_{month}.csv',
-            controller='ckanext.ga_report.controller:GaReport',
-            action='csv_downloads'
-        )
-
-        # GaDatasetReport
-        map.connect(
-            '/site-usage/publisher',
-            controller='ckanext.ga_report.controller:GaDatasetReport',
-            action='publishers'
-        )
-        map.connect(
-            '/site-usage/publishers_{month}.csv',
-            controller='ckanext.ga_report.controller:GaDatasetReport',
-            action='publisher_csv'
-        )
-        map.connect(
-            '/site-usage/dataset/datasets_{id}_{month}.csv',
-            controller='ckanext.ga_report.controller:GaDatasetReport',
-            action='dataset_csv'
-        )
-        map.connect(
-            '/site-usage/dataset',
-            controller='ckanext.ga_report.controller:GaDatasetReport',
-            action='read'
-        )
-        map.connect(
-            '/site-usage/dataset/{id}',
-            controller='ckanext.ga_report.controller:GaDatasetReport',
-            action='read_publisher'
-        )
+        ga_enabled_routes_after_map(map)
+        ga_report_enabled_routes_after_map(map)
         return map
 
     # ITemplateHelpers
@@ -260,10 +158,8 @@ class DsStatsPlugin(plugins.SingletonPlugin):
         See IConfigurable.
 
         '''
-        if 'googleanalytics.id' in config:
-            # msg = "Missing googleanalytics.id in config"
-            # raise GoogleAnalyticsException(msg)
-            self.googleanalytics_id = config['googleanalytics.id']
+        if 'ds_stats.ga.id' in config:
+            self.googleanalytics_id = config['ds_stats.ga.id']
             self.googleanalytics_domain = config.get(
                     'googleanalytics.domain', 'auto')
             self.googleanalytics_fields = ast.literal_eval(config.get(
@@ -279,12 +175,9 @@ class DsStatsPlugin(plugins.SingletonPlugin):
             if self.googleanalytics_linked_domains:
                 self.googleanalytics_fields['allowLinker'] = 'true'
 
-            # self.googleanalytics_javascript_url = h.url_for_static(
-            #         '/scripts/ckanext-googleanalytics.js')
-
-            # If resource_prefix is not in config file then write the default value
-            # to the config dict, otherwise templates seem to get 'true' when they
-            # try to read resource_prefix from config.
+            # If resource_prefix is not in config file then write the default
+            # value to the config dict, otherwise templates seem to get 'true'
+            # when they try to read resource_prefix from config.
             if 'googleanalytics_resource_prefix' not in config:
                 config['googleanalytics_resource_prefix'] = (
                         commands.DEFAULT_RESOURCE_URL_TAG)
@@ -310,7 +203,7 @@ class DsStatsPlugin(plugins.SingletonPlugin):
         templates in this extension, see ITemplateHelpers.
 
         '''
-        if config.get('googleanalytics.id', ''):
+        if config.get('ds_stats.ga.id', ''):
             data = {
                 'googleanalytics_id': self.googleanalytics_id,
                 'googleanalytics_domain': self.googleanalytics_domain,

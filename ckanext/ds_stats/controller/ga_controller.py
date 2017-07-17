@@ -1,18 +1,12 @@
 import logging
 from ckan.lib.base import BaseController, c, render, request
 import ckanext.ds_stats.dbutil as dbutil
-
-import urllib
-import urllib2
-
 import ckan.logic as logic
 import hashlib
 from ckanext.ds_stats.plugin import DsStatsPlugin
 from pylons import config
 
-from webob.multidict import UnicodeMultiDict
 from paste.util.multidict import MultiDict
-
 from ckan.controllers.api import ApiController
 
 log = logging.getLogger('ckanext.ds_stats.googleanalytics')
@@ -21,18 +15,19 @@ log = logging.getLogger('ckanext.ds_stats.googleanalytics')
 class GAController(BaseController):
     def view(self):
         # get package objects corresponding to popular GA content
+        c.top_packages = dbutil.get_top_packages(limit=10)
         c.top_resources = dbutil.get_top_resources(limit=10)
-        return render('summary.html')
+        return render('googleanalytics/summary.html')
 
 
 class GAApiController(ApiController):
     # intercept API calls to record via google analytics
     def _post_analytics(
             self, user, request_obj_type, request_function, request_id):
-        if config.get('googleanalytics.id'):
+        if config.get('ds_stats.ga.id'):
             data_dict = {
                 "v": 1,
-                "tid": config.get('googleanalytics.id'),
+                "tid": config.get('ds_stats.ga.id'),
                 "cid": hashlib.md5(user).hexdigest(),
                 # customer id should be obfuscated
                 "t": "event",

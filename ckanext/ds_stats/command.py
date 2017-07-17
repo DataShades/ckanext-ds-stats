@@ -38,6 +38,7 @@ class InitDBGaReport(CkanCommand):
         ga_model.init_tables()
         log.info("DB tables are setup")
 
+
 class FixTimePeriods(CkanCommand):
     """
     Fixes the 'All' records for GA_Urls
@@ -67,6 +68,7 @@ class FixTimePeriods(CkanCommand):
         post_update_url_stats()
         log.info("Processing complete")
 
+
 class LoadAnalyticsGaReport(CkanCommand):
     """Get data from Google Analytics API and save it
     in the ga_model
@@ -84,17 +86,18 @@ class LoadAnalyticsGaReport(CkanCommand):
     min_args = 0
 
     def __init__(self, name):
-        super(LoadAnalytics, self).__init__(name)
+        super(LoadAnalyticsGaReport, self).__init__(name)
         self.parser.add_option('-d', '--delete-first',
                                action='store_true',
                                default=False,
                                dest='delete_first',
                                help='Delete data for the period first')
-        self.parser.add_option('-s', '--skip_url_stats',
-                               action='store_true',
-                               default=False,
-                               dest='skip_url_stats',
-                               help='Skip the download of URL data - just do site-wide stats')
+        self.parser.add_option(
+            '-s', '--skip_url_stats',
+            action='store_true',
+            default=False,
+            dest='skip_url_stats',
+            help='Skip the download of URL data - just do site-wide stats')
         self.token = ""
 
     def command(self):
@@ -103,23 +106,26 @@ class LoadAnalyticsGaReport(CkanCommand):
         from download_analytics import DownloadAnalytics
         from ga_auth import (init_service, get_profile_id)
 
-        ga_token_filepath = os.path.expanduser(config.get('googleanalytics.token.filepath', ''))
+        ga_token_filepath = os.path.expanduser(config.get(
+            'ds_stats.ga.token.filepath', ''))
         if not ga_token_filepath:
-            print 'ERROR: In the CKAN config you need to specify the filepath of the ' \
-                  'Google Analytics token file under key: googleanalytics.token.filepath'
+            print 'ERROR: In the CKAN config you need to specify the ' \
+                  'filepath of the  Google Analytics token file under ' \
+                  'key: ds_stats.ga.token.filepath'
             return
 
         try:
             self.token, svc = init_service(ga_token_filepath)
-        except TypeError as e:
+        except TypeError:
             print ('Have you correctly run the getauthtoken task and '
                    'specified the correct token file in the CKAN config under '
-                   '"googleanalytics.token.filepath"?')
+                   '"ds_stats.ga.token.filepath"?')
             return
 
-        downloader = DownloadAnalytics(svc, self.token, profile_id=get_profile_id(svc),
-                                       delete_first=self.options.delete_first,
-                                       skip_url_stats=self.options.skip_url_stats)
+        downloader = DownloadAnalytics(
+            svc, self.token, profile_id=get_profile_id(svc),
+            delete_first=self.options.delete_first,
+            skip_url_stats=self.options.skip_url_stats)
 
         time_period = self.args[0] if self.args else 'latest'
         if time_period == 'all':
@@ -130,6 +136,7 @@ class LoadAnalyticsGaReport(CkanCommand):
             # The month to use
             for_date = datetime.datetime.strptime(time_period, '%Y-%m')
             downloader.specific_month(for_date)
+
 
 class InitDBGA(CkanCommand):
     """Initialise the local stats database tables
@@ -146,6 +153,7 @@ class InitDBGA(CkanCommand):
         log = logging.getLogger('ckanext.ds_stats.ga')
         dbutil.init_tables()
         log.info("Set up statistics tables in main database")
+
 
 class LoadAnalyticsGA(CkanCommand):
     """Parse data from Google Analytics API and store it
@@ -212,7 +220,8 @@ class LoadAnalyticsGA(CkanCommand):
                  SET package_id = COALESCE(
                      (SELECT id FROM package p WHERE t.url =  %s || p.name)
                      ,'~~not~found~~')
-                 WHERE t.package_id = '~~not~found~~' AND tracking_type = 'page';'''
+                 WHERE t.package_id='~~not~found~~' AND tracking_type='page';
+              '''
         engine.execute(sql, '%sedit/' % PACKAGE_URL)
 
         # update summary totals for resources
@@ -227,7 +236,8 @@ class LoadAnalyticsGA(CkanCommand):
                     SELECT sum(count)
                     FROM tracking_summary t2
                     WHERE t1.url = t2.url
-                    AND t2.tracking_date <= t1.tracking_date AND t2.tracking_date >= t1.tracking_date - 14
+                    AND t2.tracking_date <= t1.tracking_date
+                    AND t2.tracking_date >= t1.tracking_date - 14
                  ) + t1.count
                  WHERE t1.running_total = 0 AND tracking_type = 'resource';'''
         engine.execute(sql)
@@ -244,7 +254,8 @@ class LoadAnalyticsGA(CkanCommand):
                     SELECT sum(count)
                     FROM tracking_summary t2
                     WHERE t1.package_id = t2.package_id
-                    AND t2.tracking_date <= t1.tracking_date AND t2.tracking_date >= t1.tracking_date - 14
+                    AND t2.tracking_date <= t1.tracking_date
+                    AND t2.tracking_date >= t1.tracking_date - 14
                  ) + t1.count
                  WHERE t1.running_total = 0 AND tracking_type = 'page'
                  AND t1.package_id IS NOT NULL
@@ -296,7 +307,7 @@ class LoadAnalyticsGA(CkanCommand):
 
         packages = {}
         query = 'ga:pagePath=~%s,ga:pagePath=~%s' % \
-                    (PACKAGE_URL, self.resource_url_tag)
+            (PACKAGE_URL, self.resource_url_tag)
         metrics = 'ga:uniquePageviews'
         sort = '-ga:uniquePageviews'
 
@@ -305,15 +316,16 @@ class LoadAnalyticsGA(CkanCommand):
         # data retrival is chunked
         completed = False
         while not completed:
-            results = self.service.data().ga().get(ids='ga:%s' % self.profile_id,
-                                 filters=query,
-                                 dimensions='ga:pagePath',
-                                 start_date=start_date,
-                                 start_index=start_index,
-                                 max_results=max_results,
-                                 metrics=metrics,
-                                 sort=sort,
-                                 end_date=end_date).execute()
+            results = self.service.data().ga().get(
+                ids='ga:%s' % self.profile_id,
+                filters=query,
+                dimensions='ga:pagePath',
+                start_date=start_date,
+                start_index=start_index,
+                max_results=max_results,
+                metrics=metrics,
+                sort=sort,
+                end_date=end_date).execute()
             result_count = len(results.get('rows', []))
             if result_count < max_results:
                 completed = True
@@ -365,7 +377,7 @@ class LoadAnalyticsGA(CkanCommand):
             if matches:
                 resource_url = identifier[len(self.resource_url_tag):]
                 resource = model.Session.query(model.Resource).autoflush(True)\
-                           .filter_by(id=matches.group(1)).first()
+                    .filter_by(id=matches.group(1)).first()
                 if not resource:
                     log.warning("Couldn't find resource %s" % resource_url)
                     continue
@@ -400,16 +412,17 @@ class LoadAnalyticsGA(CkanCommand):
 
         print '%s -> %s' % (from_date, to_date)
 
-        results = self.service.data().ga().get(ids='ga:' + self.profile_id,
-                                      start_date=from_date,
-                                      end_date=to_date,
-                                      dimensions='ga:pagePath',
-                                      metrics=metrics,
-                                      sort=sort,
-                                      start_index=start_index,
-                                      filters=query_filter,
-                                      max_results=max_results
-                                      ).execute()
+        results = self.service.data().ga().get(
+            ids='ga:' + self.profile_id,
+            start_date=from_date,
+            end_date=to_date,
+            dimensions='ga:pagePath',
+            metrics=metrics,
+            sort=sort,
+            start_index=start_index,
+            filters=query_filter,
+            max_results=max_results
+            ).execute()
         return results
 
     def get_ga_data(self, query_filter=None, start_date=None, end_date=None):
@@ -439,10 +452,11 @@ class LoadAnalyticsGA(CkanCommand):
                             package = '/' + '/'.join(package.split('/')[2:])
 
                         count = result[1]
-                        # Make sure we add the different representations of the same
-                        # dataset /mysite.com & /www.mysite.com ...
+                        # Make sure we add the different representations of the
+                        # same dataset /mysite.com & /www.mysite.com ...
                         val = 0
-                        if package in packages and date_name in packages[package]:
+                        if (package in packages
+                                and date_name in packages[package]):
                             val += packages[package][date_name]
                         packages.setdefault(package, {})[date_name] = \
                             int(count) + val
