@@ -286,7 +286,7 @@ class Stats(object):
         def fetch_activity_counts():
             connection = model.Session.connection()
             return connection.execute(
-                "select to_char(timestamp, 'YYYY-MM') as month,activity_type, count(*) from activity group by month, activity_type order by month;").fetchall();
+                "select to_char(timestamp, 'YYYY-MM') as month,activity_type, count(*) from activity group by month, activity_type order by month;").fetchall()
 
         if cache_enabled:
             key = 'activity_counts'

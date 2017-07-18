@@ -25,11 +25,11 @@ def init_service(credentials_file):
     service object representing the analytics API.
     """
     http = httplib2.Http()
-
     credentials = _prepare_credentials(credentials_file)
     http = credentials.authorize(http)  # authorize the http object
 
-    return build('analytics', 'v3', http=http)
+    return credentials.get_access_token().access_token, build('analytics',
+                                                              'v3', http=http)
 
 
 def get_profile_id(service):
@@ -46,10 +46,17 @@ def get_profile_id(service):
         return None
 
     accountName = config.get('ds_stats.ga.account')
+    if not accountName:
+        raise Exception('ds_stats.ga.account needs to be configured')
     webPropertyId = config.get('ds_stats.ga.id')
+    if not webPropertyId:
+        raise Exception('ds_stats.ga.id needs to be configured')
     for acc in accounts.get('items'):
         if acc.get('name') == accountName:
             accountId = acc.get('id')
+            break
+    else:
+        raise Exception('Account did not match. Check `ds_stats.ga.account`')
 
     # TODO: check, whether next line is doing something useful.
     webproperties = service.management().webproperties().list(
