@@ -13,7 +13,7 @@
             {% endfor %}
         </ul>
       <p>
-        <a href="{{h.url_for(controller='ckanext.ga_report.controller:GaDatasetReport',action='read_publisher',id=publisher.name)}}">
+        <a href="{{h.url_for(controller='ckanext.ds_stats.controller.ga_report_controller:GaDatasetReport',action='read_publisher',id=publisher.name)}}">
           {% if preview_image %}
           <img src="{{preview_image}}" />{% endif %}<br/>
           More usage data for {{publisher.title}}
@@ -22,4 +22,3 @@
      </div>
 
 {% endif %}
-

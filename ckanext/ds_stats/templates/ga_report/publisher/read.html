@@ -3,7 +3,7 @@
 
 {% block title %}Usage by Dataset - {{ super() }}{% endblock %}
 
-{% block optional_head %}
+{# {% block optional_head %}
     <link rel="stylesheet" type="text/css" href="/scripts/vendor/rickshaw.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/ga_report.css?1"/>
     <script type="text/javascript" src="/scripts/modernizr-2.6.2.custom.js"></script>
@@ -13,7 +13,7 @@
     <script type="text/javascript" src="/scripts/vendor/d3.v2.js"></script>
     <script type="text/javascript" src="/scripts/vendor/d3.layout.min.js"></script>
     <script type="text/javascript" src="/scripts/vendor/rickshaw.min.js"></script>
-{% endblock %}
+{% endblock %} #}
 
 
 {% block breadcrumb_content %}
@@ -27,9 +27,10 @@
 {% endblock %}
 
 {% block primary_content_inner %}
+  {% set ga_report_dataset_ctrl = 'ckanext.ds_stats.controller.ga_report_controller:GaDatasetReport' %}
   <div>
 
-  {% set download_link=h.url_for(controller='ckanext.ga_report.controller:GaDatasetReport',action='dataset_csv',id=c.publisher_name or 'all',month=c.month or 'all')%}
+  {% set download_link=h.url_for(controller=ga_report_dataset_ctrl,action='dataset_csv',id=c.publisher_name or 'all',month=c.month or 'all')%}
       <a class="btn button btn-primary btn-sm pull-right" href="{{download_link}}"><i class="icon-download"></i>&nbsp; Download as CSV</a>
 
     <h1>{{g.site_title.capitalize()}} Usage
@@ -63,7 +64,7 @@
     {% else %}
       <h2>Statistics for all months</h2>
    {% endif %}
-   <form style="margin-bottom:10px;" class="form-inline" action="{{h.url_for(controller='ckanext.ga_report.controller:GaDatasetReport',action='read')}}" method="get">
+   <form style="margin-bottom:10px;" class="form-inline" action="{{h.url_for(controller=ga_report_dataset_ctrl,action='read')}}" method="get">
       <div class="controls">
 
         {{m.month_selector(c.month, c.months, c.day)}}

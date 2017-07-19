@@ -4,7 +4,7 @@
 {% block title %}Usage by Publisher - {{ super() }}{% endblock %}
 
 
-{% block optional_head %}
+{# {% block optional_head %}
     <link rel="stylesheet" type="text/css" href="/scripts/vendor/rickshaw.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/ga_report.css?1"/>
     <script type="text/javascript" src="/scripts/modernizr-2.6.2.custom.js"></script>
@@ -14,7 +14,7 @@
     <script type="text/javascript" src="/scripts/vendor/d3.v2.js"></script>
     <script type="text/javascript" src="/scripts/vendor/d3.layout.min.js"></script>
     <script type="text/javascript" src="/scripts/vendor/rickshaw.min.js"></script>
-{% endblock %}
+{% endblock %} #}
 
 {% block breadcrumb_content %}
     <li><a href="/data/site-usage">Site Analytics</a></li>
@@ -22,8 +22,9 @@
 {% endblock %}
 
 {% block primary_content_inner %}
+  {% set ga_report_dataset_ctrl = 'ckanext.ds_stats.controller.ga_report_controller:GaDatasetReport' %}
   <div>
-    {% set download_link=h.url_for(controller='ckanext.ga_report.controller:GaDatasetReport',action='publisher_csv',month=c.month or 'all') %}
+    {% set download_link=h.url_for(controller=ga_report_dataset_ctrl,action='publisher_csv',month=c.month or 'all') %}
     <a class="btn button btn-primary btn-sm pull-right" href="{{download_link}}"><i class="icon-download"></i>&nbsp; Download as CSV</a>
     <h1>{{g.site_title.capitalize()}} Usage</h1>
 
@@ -45,7 +46,7 @@
     </div>
 
        <hr/>
-       <form class="form-inline" action="{{h.url_for(controller='ckanext.ga_report.controller:GaDatasetReport',action='publishers')}}" method="get">
+       <form class="form-inline" action="{{h.url_for(controller=ga_report_dataset_ctrl,action='publishers')}}" method="get">
           <div class="controls">
             <h2 class="ga-reports-heading">Statistics for</h2>
               {{m.month_selector(c.month, c.months, c.day)}}
@@ -60,7 +61,7 @@
        {% for publisher, views, visits in c.top_publishers %}
         <tr>
           <td>
-              {{h.link_to(publisher.title, h.url_for(controller='ckanext.ga_report.controller:GaDatasetReport', action='read_publisher', id=publisher.name) + (("?month=" + c.month) if c.month else ''))}}
+              {{h.link_to(publisher.title, h.url_for(controller=ga_report_dataset_ctrl, action='read_publisher', id=publisher.name) + (("?month=" + c.month) if c.month else ''))}}
           </td>
           <td class="td-numeric">{{views}}</td>
         </tr>
