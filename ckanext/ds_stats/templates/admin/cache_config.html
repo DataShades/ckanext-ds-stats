@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+
+{% import 'macros/form.html' as form %}
+
+{% block primary_content_inner %}
+
+    {{ form.errors(error_summary) }}
+
+    <form method="post" action="" class="form-horizontal" id="admin-cache-config-form">
+        {% block admin_cache_form %}
+            {{ form.checkbox('public_display', label=_("Public display"), id='public-display', checked=public_display, value="public_display") }}
+            {{ form.checkbox('sysadmin_display', label=_("Admin display"), id='sysadmin-display', checked=sysadmin_display, value="sysadmin_display") }}
+        {% endblock %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" name="save">{{ _('Update Cache Config') }}</button>
+        </div>
+    </form>
+{% endblock %}

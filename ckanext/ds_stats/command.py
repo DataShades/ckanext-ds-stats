@@ -9,6 +9,7 @@ from ckan.lib.cli import CkanCommand
 import ckan.model as model
 
 import dbutil
+import ds_stats_model
 
 log = logging.getLogger('ckanext.ds_stats')
 PACKAGE_URL = '/dataset/'  # XXX get from routes...
@@ -461,3 +462,22 @@ class LoadAnalyticsGA(CkanCommand):
                         packages.setdefault(package, {})[date_name] = \
                             int(count) + val
         return packages
+
+
+class InitDBDsStatsCache(CkanCommand):
+    """Initialise the local stats database tables
+    """
+    summary = __doc__.split('\n')[0]
+    usage = __doc__
+    max_args = 0
+    min_args = 0
+
+    def command(self):
+        self._load_config()
+        model.Session.remove()
+        model.Session.configure(bind=model.meta.engine)
+        log = logging.getLogger('ckanext.ds_stats.stats')
+        ds_stats_model.create_table()
+        ds_stats_model.update_table()
+        log.info("Set up ds_stats_cache table in main database")
+        log.info("Set up default values for ds_stats_cache table")

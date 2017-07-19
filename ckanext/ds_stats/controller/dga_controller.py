@@ -1,7 +1,12 @@
 import ckan.plugins as p
-from ckan.lib.base import BaseController
+from ckan.lib.base import BaseController, render, request
 import ckanext.ds_stats.stats as stats_lib
 import ckan.lib.helpers as h
+from ckan.controllers.admin import AdminController
+from ckan.common import _
+import ckan.model as model
+from ckanext.ds_stats.ds_stats_model import DsStatsCache
+from ckanext.ds_stats import ADMINSTATS_CTRL
 
 import Queue
 
@@ -82,3 +87,36 @@ class StatsController(BaseController):
                 'new_packages': 0})
 
         return p.toolkit.render('stats/index.html')
+
+
+class AdminStatsController(AdminController):
+    def cache_config(self):
+        query = model.Session.query(DsStatsCache)
+        cache_config = query.first()
+        if cache_config is None:
+            from ckanext.ds_stats.ds_stats_model import update_table
+            update_table()
+            cache_config = query.first()
+
+        vars = {
+            'public_display': cache_config.public_display,
+            'sysadmin_display': cache_config.sysadmin_display,
+            'cache_timeout': cache_config.cache_timeout
+        }
+
+        data = request.POST
+        if 'save' in data:
+            pd = True if data.get('public_display') is not None else False
+            ad = True if data.get('sysadmin_display') is not None else False
+            ct = data['cache_timeout'] if data.get(
+                'cache_timeout') else cache_config.cache_timeout
+            query.update({
+                'public_display': pd,
+                'sysadmin_display': ad,
+                'cache_timeout': ct
+            })
+            model.Session.commit()
+            h.flash_success(_('Cache config updated'))
+            h.redirect_to(controller=ADMINSTATS_CTRL, action='cache_config')
+
+        return render('admin/cache_config.html', extra_vars=vars)

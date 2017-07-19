@@ -1,4 +1,5 @@
 DGA_CTRL = 'ckanext.ds_stats.controller.dga_controller:StatsController'
+ADMINSTATS_CTRL = 'ckanext.ds_stats.controller.dga_controller:AdminStatsController'
 GA_API_CTRL = 'ckanext.ds_stats.controller.ga_controller:GAApiController'
 GA_CTRL = 'ckanext.ds_stats.controller.ga_controller:GAController'
 GAREPORT_CTRL = 'ckanext.ds_stats.controller.ga_report_controller:GaReport'
