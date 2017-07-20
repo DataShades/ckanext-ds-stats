@@ -47,6 +47,7 @@ The ds_stats.ga-report.bounce_url specifies a particular path to record the boun
 
     $ paster initdb-ga --config=../ckan/development.ini
     $ paster initdb-ga-report --config=../ckan/development.ini
+    $ paster initdb-ds-stats-cache --config=../ckan/development.ini
 
 4. Enable the extension in your CKAN config file by adding it to ``ckan.plugins``::
 

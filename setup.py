@@ -91,6 +91,7 @@ setup(
         initdb-ga-report = ckanext.ds_stats.command:InitDBGaReport
         loadanalytics-ga-report = ckanext.ds_stats.command:LoadAnalyticsGaReport
         fixtimeperiods = ckanext.ds_stats.command:FixTimePeriods
+        initdb-ds-stats-cache = ckanext.ds_stats.command:InitDBDsStatsCache
     ''',
 
     # If you are changing from the default layout of your extension, you may

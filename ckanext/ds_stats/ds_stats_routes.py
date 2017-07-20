@@ -1,6 +1,6 @@
 from routes.mapper import SubMapper
 from ckanext.ds_stats import (GA_API_CTRL, GA_CTRL, DGA_CTRL, GAREPORT_CTRL,
-                              GADATASETREPORT_CTRL)
+                              GADATASETREPORT_CTRL, ADMINSTATS_CTRL)
 
 
 def ga_enabled_routes_before_map(map):
@@ -87,3 +87,9 @@ def ga_report_enabled_routes_after_map(map):
         )
         m.connect('/site-usage/dataset', action='read')
         m.connect('/site-usage/dataset/{id}', action='read_publisher')
+
+
+def stats_admin_enabled_routes_before_map(map):
+    with SubMapper(map, controller=ADMINSTATS_CTRL) as m:
+        m.connect('admin_cache_config', '/ckan-admin/cache_config',
+                  action='cache_config')

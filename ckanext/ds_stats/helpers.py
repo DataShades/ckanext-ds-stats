@@ -167,3 +167,15 @@ def join_x(graph):
 
 def join_y(graph):
     return ','.join([y for x, y in graph])
+
+
+def get_cache_config():
+    from ckanext.ds_stats.ds_stats_model import DsStatsCache
+    query = model.Session.query(DsStatsCache)
+    cache_config = query.first()
+    if cache_config is None:
+        from ckanext.ds_stats.ds_stats_model import update_table
+        update_table()
+        cache_config = query.first()
+    return (cache_config.public_display, cache_config.sysadmin_display,
+            cache_config.cache_timeout)
