@@ -144,7 +144,7 @@ class DownloadAnalytics(object):
                 log.info('Downloading analytics for dataset views')
                 # TODO: [extract SA]
                 data = self.download(start_date, end_date,
-                                     '~^/data/dataset/[a-z0-9-_]+')
+                                     '~^/dataset/[a-z0-9-_]+')
 
                 log.info('Storing dataset views (%i rows)', len(
                         data.get('url')))

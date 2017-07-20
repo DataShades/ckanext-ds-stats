@@ -55,7 +55,7 @@ def single_popular_dataset(top=100):
             rand = random.randrange(0, min(top, num_top_datasets))
             ga_url = top_datasets[rand]
             # TODO: [extract SA]
-            dataset = model.Package.get(ga_url.url[len('/data/dataset/'):])
+            dataset = model.Package.get(ga_url.url[len('/dataset/'):])
             if dataset and not dataset.state == 'active':
                 dataset = None
             # When testing, it is possible that top datasets are not available
@@ -118,7 +118,7 @@ def _datasets_for_publisher(publisher, count):
     for entry in entries:
         if len(datasets) < count:
             # TODO: [extract SA]
-            p = model.Package.get(entry.url[len('/data/dataset/'):])
+            p = model.Package.get(entry.url[len('/dataset/'):])
 
             if not p:
                 _log.warning("Could not find Package for {url}".format(

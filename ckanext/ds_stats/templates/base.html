@@ -5,6 +5,9 @@
     {% block googleanalytics_header %}
         {{ h.googleanalytics_header() }}
     {% endblock %}
+    {% block ga_report %}
+        {% resource 'ds_stats/scripts_ga_report' %}
+    {% endblock %}
 {% endblock %}
 
 {% block scripts %}

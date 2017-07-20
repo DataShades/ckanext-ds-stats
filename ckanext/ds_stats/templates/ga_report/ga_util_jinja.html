@@ -31,18 +31,13 @@
 {% endmacro %}
 
 {% macro rickshaw_graph(items_json,id,mode='line',colorscheme='munin') %}
-<div>
-  <div id="chart_container_{{id}}" class="rickshaw_chart_container">
-    <div id="y_axis_{{id}}" class="rickshaw_y_axis"></div>
-    <div id="chart_{{id}}" class="rickshaw_chart"></div>
-    <script type="text/javascript">
-      $(function() {
-          var items = {{items_json|safe}};
-          CKAN.GA_Reports.render_rickshaw('{{id}}', items, '{{mode}}', '{{colorscheme}}');
-      });
-    </script>
+  <div>
+    <div id="chart_container_{{id}}" class="rickshaw_chart_container">
+      <div id="y_axis_{{id}}" class="rickshaw_y_axis"></div>
+      <div id="chart_{{id}}"   class="rickshaw_chart"></div>
+      <div id="ga-build-graphs" data-module="ga-report-graphs-rickshaw" data-items= "{{ items_json }}" data-id="{{id}}" data-mode="{{mode}}" data-colorscheme="{{colorscheme}}"></div>
+    </div>
   </div>
-</div>
 {% endmacro %}
 
 {% macro stat_table(items, title='Views') %}
