@@ -1,22 +1,10 @@
 import datetime
-from pylons import config, cache
 from sqlalchemy import Table, select, func
 from sqlalchemy.sql.expression import text
-import ckan.plugins as p
 import ckan.logic as logic
 import ckan.model as model
 
 import re
-
-cache_enabled = p.toolkit.asbool(
-            config.get('ckanext.stats.cache_enabled', 'True'))
-
-if cache_enabled:
-    cache_default_timeout = p.toolkit.asint(
-            config.get('ckanext.stats.cache_default_timeout', '86400'))
-    cache_fast_timeout = p.toolkit.asint(
-            config.get('ckanext.stats.cache_fast_timeout', '600'))
-    our_cache = cache.get_cache('stats', type='memory')
 
 DATE_FORMAT = '%Y-%m-%d'
 TODAY = datetime.date.today()
@@ -32,7 +20,7 @@ def datetime2date(datetime_):
 
 class Stats(object):
     @classmethod
-    def top_rated_packages(cls, limit=10):
+    def top_rated_packages(cls, our_cache, cache_timeout, limit=10):
         # NB Not using sqlalchemy as sqla 0.4 doesn't work using both group_by
         # and apply_avg
         def fetch_top_rated_packages():
@@ -50,17 +38,17 @@ class Stats(object):
             return [(model.Session.query(model.Package).get(unicode(pkg_id)),
                      avg, num) for pkg_id, avg, num in res_ids]
 
-        if cache_enabled:
+        if cache_timeout:
             key = 'top_rated_packages_limit_%s' % str(limit)
             res_pkgs = our_cache.get_value(key=key,
                                            createfunc=fetch_top_rated_packages,
-                                           expiretime=cache_default_timeout)
+                                           expiretime=cache_timeout)
         else:
             res_pkgs = fetch_top_rated_packages()
         return res_pkgs
 
     @classmethod
-    def most_edited_packages(cls, limit=10):
+    def most_edited_packages(cls, our_cache, cache_timeout, limit=10):
 
         def fetch_most_edited_packages():
             package_revision = table('package_revision')
@@ -76,19 +64,19 @@ class Stats(object):
             return [(model.Session.query(model.Package).get(unicode(pkg_id)),
                      val) for pkg_id, val in res_ids]
 
-        if cache_enabled:
+        if cache_timeout:
             key = 'most_edited_packages_limit_%s' % str(limit)
             res_pkgs = our_cache.get_value(
                 key=key,
                 createfunc=fetch_most_edited_packages,
-                expiretime=cache_default_timeout)
+                expiretime=cache_timeout)
         else:
             res_pkgs = fetch_most_edited_packages()
 
         return res_pkgs
 
     @classmethod
-    def largest_groups(cls, limit=10):
+    def largest_groups(cls, our_cache, cache_timeout, limit=10):
 
         def fetch_largest_groups():
             member = table('member')
@@ -104,17 +92,17 @@ class Stats(object):
             return [(model.Session.query(model.Group).get(unicode(group_id)),
                      val) for group_id, val in res_ids]
 
-        if cache_enabled:
+        if cache_timeout:
             key = 'largest_groups_limit_%s' % str(limit)
             res_groups = our_cache.get_value(key=key,
                                              createfunc=fetch_largest_groups,
-                                             expiretime=cache_default_timeout)
+                                             expiretime=cache_timeout)
         else:
             res_groups = fetch_largest_groups()
         return res_groups
 
     @classmethod
-    def by_org(cls, limit=10):
+    def by_org(cls, our_cache, cache_timeout, limit=10):
 
         def fetch_by_org():
             connection = model.Session.connection()
@@ -127,18 +115,18 @@ class Stats(object):
             return [(model.Session.query(model.Group).get(unicode(group_id)),
                      private, val) for group_id, private, val in res]
 
-        if cache_enabled:
+        if cache_timeout:
             key = 'fetch_by_org'
             res_groups = our_cache.get_value(key=key,
                                              createfunc=fetch_by_org,
-                                             expiretime=cache_default_timeout)
+                                             expiretime=cache_timeout)
         else:
             res_groups = fetch_by_org()
 
         return res_groups
 
     @classmethod
-    def res_by_org(cls, limit=10):
+    def res_by_org(cls, our_cache, cache_timeout, limit=10):
 
         def fetch_res_by_org():
             connection = model.Session.connection()
@@ -170,18 +158,18 @@ class Stats(object):
                  group_tab[group_id] + group_spatial[group_id] +
                  group_other[group_id]) for group_id in group_ids]
 
-        if cache_enabled:
+        if cache_timeout:
             key = 'res_by_org'
             res_by_orgs = our_cache.get_value(key=key,
                                               createfunc=fetch_res_by_org,
-                                              expiretime=cache_default_timeout)
+                                              expiretime=cache_timeout)
         else:
             res_by_orgs = fetch_res_by_org()
 
         return res_by_orgs
 
     @classmethod
-    def top_active_orgs(cls, limit=10):
+    def top_active_orgs(cls, our_cache, cache_timeout, limit=10):
 
         def fetch_top_active_orgs():
             connection = model.Session.connection()
@@ -197,17 +185,17 @@ class Stats(object):
             return [(model.Session.query(model.Group).get(unicode(group_id)),
                      val) for group_id, val in res]
 
-        if cache_enabled:
+        if cache_timeout:
             key = 'top_active_orgs'
             res_groups = our_cache.get_value(key=key,
                                              createfunc=fetch_top_active_orgs,
-                                             expiretime=cache_default_timeout)
+                                             expiretime=cache_timeout)
         else:
             res_groups = fetch_top_active_orgs()
         return res_groups
 
     @classmethod
-    def top_package_owners(cls, limit=10):
+    def top_package_owners(cls, our_cache, cache_timeout, limit=10):
 
         def fetch_top_package_owners():
             query = model.Session.query(
@@ -227,17 +215,17 @@ class Stats(object):
                 for user_id, count in userid_count
                 if user_id]
 
-        if cache_enabled:
+        if cache_timeout:
             key = 'top_package_owners_limit_%s' % str(limit)
             res_groups = our_cache.get_value(key=key,
                                              createfunc=fetch_top_package_owners,
-                                             expiretime=cache_default_timeout)
+                                             expiretime=cache_timeout)
         else:
             res_groups = fetch_top_package_owners()
         return res_groups
 
     @classmethod
-    def summary_stats(cls):
+    def summary_stats(cls, our_cache, cache_timeout):
 
         def fetch_summary_stats():
             connection = model.Session.connection()
@@ -270,36 +258,35 @@ class Stats(object):
 
             return result
 
-        if cache_enabled:
+        if cache_timeout:
             key = 'summary_stats'
             sum_stats = our_cache.get_value(key=key,
                                             createfunc=fetch_summary_stats,
-                                            expiretime=cache_fast_timeout)
+                                            expiretime=cache_timeout)
         else:
             sum_stats = fetch_summary_stats()
-
         return sum_stats
 
     @classmethod
-    def activity_counts(cls):
+    def activity_counts(cls, our_cache, cache_timeout):
 
         def fetch_activity_counts():
             connection = model.Session.connection()
             return connection.execute(
                 "select to_char(timestamp, 'YYYY-MM') as month,activity_type, count(*) from activity group by month, activity_type order by month;").fetchall()
 
-        if cache_enabled:
+        if cache_timeout:
             key = 'activity_counts'
             res = our_cache.get_value(key=key,
                                       createfunc=fetch_activity_counts,
-                                      expiretime=cache_default_timeout)
+                                      expiretime=cache_timeout)
         else:
             res = fetch_activity_counts()
 
         return res
 
     @classmethod
-    def user_access_list(cls):
+    def user_access_list(cls, our_cache, cache_timeout):
 
         def fetch_user_access_list():
             connection = model.Session.connection()
@@ -312,18 +299,18 @@ class Stats(object):
             return [(model.Session.query(model.User).get(unicode(user_id)), sysadmin, role, last_active, orgs) for
                     (user_id, sysadmin, role, last_active, orgs) in user_res]
 
-        if cache_enabled:
+        if cache_timeout:
             key = 'user_access_list'
             res = our_cache.get_value(key=key,
                                       createfunc=fetch_user_access_list,
-                                      expiretime=cache_default_timeout)
+                                      expiretime=cache_timeout)
         else:
             res = fetch_user_access_list()
 
         return res
 
     @classmethod
-    def recent_datasets(cls):
+    def recent_datasets(cls, our_cache, cache_timeout):
 
         def fetch_recent_datasets():
             activity = table('activity')
@@ -346,11 +333,11 @@ class Stats(object):
                 )
                 for timestamp, package_id, activity_type in result]
 
-        if cache_enabled:
+        if cache_timeout:
             key = 'recent_datasets'
             res = our_cache.get_value(key=key,
                                       createfunc=fetch_recent_datasets,
-                                      expiretime=cache_default_timeout)
+                                      expiretime=cache_timeout)
         else:
             res = fetch_recent_datasets()
 
@@ -399,7 +386,7 @@ class RevisionStats(object):
         return date_ - datetime.timedelta(days=datetime.date.weekday(date_))
 
     @classmethod
-    def get_package_revisions(cls):
+    def get_package_revisions(cls, our_cache, cache_timeout):
         '''
         @return: Returns list of revisions and date of them, in
                  format: [(id, date), ...]
@@ -413,18 +400,18 @@ class RevisionStats(object):
                 revision.c.timestamp)
             return model.Session.execute(s).fetchall()  # [(id, datetime), ...]
 
-        if cache_enabled:
+        if cache_timeout:
             key = 'package_revisions'
             res = our_cache.get_value(key=key,
                                       createfunc=fetch_package_revisions,
-                                      expiretime=cache_default_timeout)
+                                      expiretime=cache_timeout)
         else:
             res = fetch_package_revisions()
 
         return res
 
     @classmethod
-    def get_new_packages(cls):
+    def get_new_packages(cls, our_cache, cache_timeout):
         '''
         @return: Returns list of new pkgs and date when they were created, in
                  format: [(id, date_ordinal), ...]
@@ -445,7 +432,7 @@ class RevisionStats(object):
                 res_pickleable.append((pkg_id, created_datetime.toordinal()))
             return res_pickleable
 
-        if cache_enabled:
+        if cache_timeout:
             week_commences = cls.get_date_week_started(TODAY)
             key = 'all_new_packages_%s' + week_commences.strftime(DATE_FORMAT)
             new_packages = our_cache.get_value(key=key,
@@ -455,9 +442,10 @@ class RevisionStats(object):
         return new_packages
 
     @classmethod
-    def get_num_packages_by_week(cls):
+    def get_num_packages_by_week(cls, our_cache, cache_timeout):
         def num_packages():
-            new_packages_by_week = cls.get_by_week('new_packages')
+            new_packages_by_week = cls.get_by_week(
+                'new_packages', our_cache, cache_timeout)
 
             first_date = datetime.datetime.strptime(new_packages_by_week[0][0],
                                                     DATE_FORMAT).date()
@@ -495,7 +483,7 @@ class RevisionStats(object):
             assert new_package_week_index == len(new_packages_by_week)
             return weekly_numbers
 
-        if cache_enabled:
+        if cache_timeout:
             week_commences = cls.get_date_week_started(TODAY)
             key = 'number_packages_%s' + week_commences.strftime(DATE_FORMAT)
             num_packages = our_cache.get_value(key=key,
@@ -505,17 +493,17 @@ class RevisionStats(object):
         return num_packages
 
     @classmethod
-    def get_by_week(cls, object_type):
+    def get_by_week(cls, object_type, our_cache, cache_timeout):
         cls._object_type = object_type
 
         def objects_by_week():
             if cls._object_type == 'new_packages':
-                objects = cls.get_new_packages()
+                objects = cls.get_new_packages(our_cache, cache_timeout)
 
                 def get_date(object_date):
                     return datetime.date.fromordinal(object_date)
             elif cls._object_type == 'package_revisions':
-                objects = cls.get_package_revisions()
+                objects = cls.get_package_revisions(our_cache, cache_timeout)
 
                 def get_date(object_date):
                     return datetime2date(object_date)
@@ -551,7 +539,7 @@ class RevisionStats(object):
                 weekly_pkg_ids.append(build_weekly_stats(week_commences, []))
             return weekly_pkg_ids
 
-        if cache_enabled:
+        if cache_timeout:
             week_commences = cls.get_date_week_started(TODAY)
             key = '%s_by_week_%s' % (cls._object_type,
                                      week_commences.strftime(DATE_FORMAT))

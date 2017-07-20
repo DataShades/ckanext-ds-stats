@@ -10,6 +10,7 @@
         {% block admin_cache_form %}
             {{ form.checkbox('public_display', label=_("Public display"), id='public-display', checked=public_display, value="public_display") }}
             {{ form.checkbox('sysadmin_display', label=_("Admin display"), id='sysadmin-display', checked=sysadmin_display, value="sysadmin_display") }}
+            {{ form.select('cache_timeout', label=_('Cache'), id='cache-timeout', options=cache_options, selected=cache_timeout) }}
         {% endblock %}
         <div class="form-actions">
             <button type="submit" class="btn btn-primary" name="save">{{ _('Update Cache Config') }}</button>

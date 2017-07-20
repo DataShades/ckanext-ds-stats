@@ -12,7 +12,7 @@ class DsStatsCache(Base):
     id = Column(UnicodeText, primary_key=True)
     public_display = Column(Boolean, default=True)
     sysadmin_display = Column(Boolean, default=False)
-    cache_timeout = Column(SmallInteger, default=1440)
+    cache_timeout = Column(SmallInteger, default=86400)
 
 
 def create_table():
@@ -24,6 +24,6 @@ def update_table():
         id=unicode(uuid.uuid4()),
         public_display=True,
         sysadmin_display=False,
-        cache_timeout=1440
+        cache_timeout=86400
     ))
     model.Session.commit()
