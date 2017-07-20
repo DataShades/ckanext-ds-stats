@@ -5,9 +5,6 @@
 
 {% block scripts %}
     {{ super() }}
-    {% block ga_report %}
-        {% resource 'ds_stats/scripts_ga_report' %}
-    {% endblock %}
 {% endblock %}
 
 {% block breadcrumb_content %}
@@ -17,7 +14,7 @@
 
 {% block primary_content_inner %}
 {% set ga_report_ctrl = 'ckanext.ds_stats.controller.ga_report_controller:GaReport' %}
-  <div>
+  <div data-module="ga_report_graphs_others">
     <div class="row">
       <div class="col-sm-7 col-md-8 col-lg-9">
         {% with download_link=h.url_for(controller=ga_report_ctrl,action='csv',month=c.month or 'all') %}
@@ -191,13 +188,5 @@
     </div>
 
   </div>
-
-    <script type="text/javascript">
-      $(function() {
-        CKAN.GA_Reports.bind_sparklines();
-        CKAN.GA_Reports.bind_sidebar();
-        CKAN.GA_Reports.bind_month_selector();
-      });
-    </script>
 
 {% endblock %}

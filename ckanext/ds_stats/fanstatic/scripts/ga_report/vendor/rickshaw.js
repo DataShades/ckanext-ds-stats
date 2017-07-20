@@ -255,8 +255,6 @@ if (typeof module != "undefined" && module.exports) {
         }
         var c;
         a.forEach(function(a) {
-            console.log(a)
-            console.log(a.data)
             if (!(a instanceof Object)) throw "series element is not an object: " + a;
             if (!a.data) throw "series has no data: " + JSON.stringify(a);
             if (!(a.data instanceof Array)) throw "series data is not an array: " + JSON.stringify(a.data);

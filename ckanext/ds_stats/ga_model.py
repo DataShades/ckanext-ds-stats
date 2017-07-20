@@ -127,7 +127,7 @@ def _get_package_and_publisher(url):
     # e.g. /data/dataset/fuel_prices
     # e.g. /data/dataset/fuel_prices/resource/e63380d4
     # TODO: [extract SA]
-    dataset_match = re.match('/data/dataset/([^/]+)(/.*)?', url)
+    dataset_match = re.match('/dataset/([^/]+)(/.*)?', url)
     if dataset_match:
         dataset_ref = dataset_match.groups()[0]
         dataset = model.Session.query(model.Package).filter(or_(
@@ -230,7 +230,7 @@ def post_update_url_stats():
         package, publisher = _get_package_and_publisher(key)
         # some old data might have used UUIDs or old slugs, update All period data to be consistent
         # TODO: [extract SA]
-        uuidregex = re.compile('\/data/dataset\/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}')
+        uuidregex = re.compile('\/dataset\/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}')
 
         values = {'id': make_uuid(),
                   'period_name': "All",
@@ -262,7 +262,7 @@ def update_url_stats(period_name, period_complete_day, data):
         package, publisher = _get_package_and_publisher(url)
         if package:
             # TODO: [extract SA]
-            url = '/data/dataset/'+package
+            url = '/dataset/'+package
         old_visits = url_data.get(url, {'visits': 0})['visits']
         old_views = url_data.get(url, {'views': 0})['views']
         item['package'] = package
