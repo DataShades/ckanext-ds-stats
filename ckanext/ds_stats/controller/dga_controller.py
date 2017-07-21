@@ -1,5 +1,5 @@
 import ckan.plugins as p
-from ckan.lib.base import BaseController, render, request, abort, config
+from ckan.lib.base import BaseController, render, request, abort
 import ckanext.ds_stats.stats as stats_lib
 import ckan.lib.helpers as h
 from ckan.controllers.admin import AdminController
@@ -34,15 +34,11 @@ def get_orgs(orgs):
 
 
 def get_raw_new_datasets(index):
-    our_cache = cache.get_cache('stats', type='memory')
-    public_display, sysadmin_display, cache_timeout = get_cache_config()
     raw_new_datasets = []
     week_queue = Queue.Queue()
     rev_stats = stats_lib.RevisionStats()
-    new_packages_by_week = rev_stats.get_by_week('new_packages',
-                                                 our_cache, cache_timeout)
-    package_revisions_by_week = rev_stats.get_by_week('package_revisions',
-                                                      our_cache, cache_timeout)
+    new_packages_by_week = rev_stats.get_by_week('new_packages')
+    package_revisions_by_week = rev_stats.get_by_week('package_revisions')
 
     for week_date, revs, num_revisions, cumulative_num_revisions in package_revisions_by_week:
         week_queue.put(week_date)
@@ -200,16 +196,12 @@ class StatsController(BaseController):
                 'map': [attrgetter('display_name' or 'name'), bool, str, get_val, get_orgs]}
         }
 
-        our_cache = cache.get_cache('stats', type='memory')
-        public_display, sysadmin_display, cache_timeout = get_cache_config()
-
         for stat in STATS:
             if stat == stat_name:
                 if stat != 'stats-dataset-revisions':
-                    data = STATS[stat]['method'](our_cache, cache_timeout)
+                    data = STATS[stat]['method']()
                 else:
-                    data = STATS[stat]['method']('package_revisions',
-                                                 our_cache, cache_timeout)
+                    data = STATS[stat]['method']('package_revisions')
                 if data:
                     for item_idx, item in enumerate(data):
                         m = STATS[stat]['map']
