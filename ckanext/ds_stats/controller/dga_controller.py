@@ -22,28 +22,24 @@ class StatsController(BaseController):
             sysadmin_display and h.check_access('sysadmin'))
         if get_stats_display:
             stats = stats_lib.Stats()
+            stats.init(our_cache, cache_timeout)
             rev_stats = stats_lib.RevisionStats()
-            c.top_rated_packages = stats.top_rated_packages(our_cache,
-                                                            cache_timeout)
-            c.most_edited_packages = stats.most_edited_packages(our_cache,
-                                                                cache_timeout)
-            c.largest_groups = stats.largest_groups(our_cache, cache_timeout)
-            c.top_package_owners = stats.top_package_owners(our_cache,
-                                                            cache_timeout)
-            c.summary_stats = stats.summary_stats(our_cache, cache_timeout)
-            c.activity_counts = stats.activity_counts(our_cache, cache_timeout)
-            c.by_org = stats.by_org(our_cache, cache_timeout)
-            c.res_by_org = stats.res_by_org(our_cache, cache_timeout)
-            c.top_active_orgs = stats.top_active_orgs(our_cache, cache_timeout)
-            c.user_access_list = stats.user_access_list(our_cache,
-                                                        cache_timeout)
-            c.recent_datasets = stats.recent_datasets(our_cache, cache_timeout)
-            c.new_packages_by_week = rev_stats.get_by_week(
-                'new_packages', our_cache, cache_timeout)
-            c.num_packages_by_week = rev_stats.get_num_packages_by_week(
-                our_cache, cache_timeout)
+            rev_stats.init(our_cache, cache_timeout)
+            c.top_rated_packages = stats.top_rated_packages()
+            c.most_edited_packages = stats.most_edited_packages()
+            c.largest_groups = stats.largest_groups()
+            c.top_package_owners = stats.top_package_owners()
+            c.summary_stats = stats.summary_stats()
+            c.activity_counts = stats.activity_counts()
+            c.by_org = stats.by_org()
+            c.res_by_org = stats.res_by_org()
+            c.top_active_orgs = stats.top_active_orgs()
+            c.user_access_list = stats.user_access_list()
+            c.recent_datasets = stats.recent_datasets()
+            c.new_packages_by_week = rev_stats.get_by_week('new_packages')
+            c.num_packages_by_week = rev_stats.get_num_packages_by_week()
             c.package_revisions_by_week = rev_stats.get_by_week(
-                'package_revisions', our_cache, cache_timeout)
+                'package_revisions')
 
             # Used in the legacy CKAN templates.
             c.packages_by_week = []
