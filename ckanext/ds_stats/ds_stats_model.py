@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, UnicodeText, Boolean, SmallInteger
+from sqlalchemy import Column, UnicodeText, Boolean, Integer
 import ckan.model as model
 import uuid
 
@@ -12,7 +12,7 @@ class DsStatsCache(Base):
     id = Column(UnicodeText, primary_key=True)
     public_display = Column(Boolean, default=True)
     sysadmin_display = Column(Boolean, default=False)
-    cache_timeout = Column(SmallInteger, default=86400)
+    cache_timeout = Column(Integer, default=86400)
 
 
 def create_table():
