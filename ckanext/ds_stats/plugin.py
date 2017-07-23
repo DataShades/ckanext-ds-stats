@@ -10,7 +10,7 @@ from ckanext.ds_stats.ds_stats_routes import (
     ga_enabled_routes_before_map,
     ga_enabled_routes_after_map,
     dga_stats_enabled_routes_after_map,
-    ga_report_enabled_routes_after_map,
+    ga_report_enabled_routes_before_map,
     stats_admin_enabled_routes_before_map
 )
 import ast
@@ -127,13 +127,13 @@ class DsStatsPlugin(plugins.SingletonPlugin):
     def before_map(self, map):
         ga_enabled_routes_before_map(map)
         stats_admin_enabled_routes_before_map(map)
+        ga_report_enabled_routes_before_map(map)
         return map
 
     def after_map(self, map):
         dga_stats_enabled_routes_after_map(map)
         self.modify_resource_download_route(map)
         ga_enabled_routes_after_map(map)
-        ga_report_enabled_routes_after_map(map)
         return map
 
     # ITemplateHelpers

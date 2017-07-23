@@ -18,7 +18,6 @@ this.ckan.module('ga-report-nav', {
    * Returns nothing.
    */
   initialize: function () {
-      console.log('!!!!!!!!!!!!!!!!!!!');
     var location = this.sandbox.location;
     var prefix = this.options.prefix;
     var hash = location.hash.slice(1);
@@ -28,12 +27,10 @@ this.ckan.module('ga-report-nav', {
     this.el.on('shown', function (event) {
       location.hash = event.target.hash.slice(prefix.length + 1);
       var url = event.target.hash;
-      var menu_name = $('[href^=' + event.target.hash + ']').text();
-      var new_menu = $('<li class="breadcrumb-ga-report"><a href="' + url + '">' + menu_name + '</a></li>');
-      if ($('.breadcrumb').children()[2]) {
-          $('.breadcrumb').children()[2].remove();
-      }
-      $('.breadcrumb').children()[1].after(new_menu[0]);
+      var menu_name = $('[href^=' + event.target.hash + ']').html();
+      var old_menu = $('.breadcrumb').children()[3];
+      var new_menu = $('<a href="' + url + '">' + menu_name + '</a>');
+      $(old_menu).html(new_menu);
     });
 
     // Show the current tab if the location provides one.

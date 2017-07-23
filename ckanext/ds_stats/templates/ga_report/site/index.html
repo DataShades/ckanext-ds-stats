@@ -1,14 +1,16 @@
 {% extends "page.html" %}
 {% import "/ga_report/ga_util_jinja.html" as m with context %}
 
-{% block title %}Site Usage - {{ super() }}{% endblock %}
+{% block title %}Site Analytics - {{ super() }}{% endblock %}
 
 {% block scripts %}
     {{ super() }}
-{% endblock %}
+{% endblock %}ju
 
 {% block breadcrumb_content %}
-    <li><a href="{{g.site_url}}/site-usage">Site Analytics</a></li>
+    <li><a href="{{g.site_url}}/stats">Statistics</a></li>
+    <li><a href="{{g.site_url}}/stats/site-analytics">Site Analytics</a></li>
+    <li class="breadcrumb-ga-report active"><a href="{{g.site_url}}/stats/site-analytics#ga-report-totals">Totals</a>
 {% endblock %}
 
 {% block primary_content_inner %}
@@ -26,8 +28,8 @@
           <div class="panel-heading"><strong>Jump To...</strong></div>
           <div class="panel-body">
             <ul>
-              <li><a href="{{g.site_url}}/site-usage/publisher">Publisher Usage Statistics</a></li>
-              <li><a href="{{g.site_url}}/site-usage/dataset">Dataset Usage Statistics</a></li>
+              <li><a href="{{g.site_url}}/stats/site-analytics/publisher">Publisher Usage Statistics</a></li>
+              <li><a href="{{g.site_url}}/stats/site-analytics/dataset">Dataset Usage Statistics</a></li>
             </ul>
           </div>
         </div>
@@ -191,7 +193,13 @@
 
 {% block secondary_content %}
 <section class="module module-narrow">
-    <h2 class="module-heading"><i class="icon-bar-chart icon-medium"></i> {{ _('Site usage menu') }}</h2>
+    <h2 class="module-heading"><i class="icon-bar-chart icon-medium"></i> {{ _('Site Stats Menu') }}</h2>
+    <nav>
+        <ul class="unstyled nav nav-simple">
+            <li class="nav-item"><a href="{{g.site_url}}/stats">Site Stats</a></li>
+        </ul>
+    </nav>
+    <h2 class="module-heading"><i class="icon-bar-chart icon-medium"></i> {{ _('Site Analytics menu') }}</h2>
     <nav data-module="ga-report-nav" class="ds-ga-report-nav">
         <ul class="unstyled nav nav-simple">
             <li class="nav-item active"><a href="#ga-report-totals" data-hash="totals" data-toggle="tab">{{ _('Totals') }}</a></li>
@@ -203,7 +211,6 @@
             <li class="nav-item"><a href="#ga-report-social_referrals_totals" data-hash="social_referrals_totals" data-toggle="tab">{{ _('Social Referral links') }}</a></li>
             <li class="nav-item"><a href="#ga-report-languages" data-hash="languages" data-toggle="tab">{{ _('Languages') }}</a></li>
             <li class="nav-item"><a href="#ga-report-country" data-hash="country" data-toggle="tab">{{ _('Country') }}</a></li>
-            <li class="nav-item"><a href="{{g.site_url}}/stats">Site Stats</a></li>
         </ul>
     </nav>
 </section>

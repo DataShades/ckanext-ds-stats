@@ -14,8 +14,3 @@
 .ds-ga-report-nav .nav .nav-item.active > a {
     background-color: #8ca0a6;
 }
-
-.breadcrumb-stats,
-.breadcrumb-ga-report {
-    padding-left: 5px;
-}
