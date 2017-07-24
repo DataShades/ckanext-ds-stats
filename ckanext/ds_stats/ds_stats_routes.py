@@ -53,11 +53,10 @@ def ga_enabled_routes_before_map(map):
         m.connect('/rest/{register}/{id}', action='delete',
                   conditions=DELETE)
 
-
-def ga_enabled_routes_after_map(map):
-    map.redirect("/analytics/package/top", "/analytics/dataset/top")
+    map.redirect("/stats/analytics/package/top",
+                 "/stats/analytics/dataset/top")
     map.connect(
-        'analytics', '/analytics/dataset/top',
+        'analytics', '/stats/analytics/dataset/top',
         controller=GA_CTRL,
         action='view'
     )

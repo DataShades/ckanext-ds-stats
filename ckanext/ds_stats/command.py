@@ -179,7 +179,7 @@ class LoadAnalyticsGA(CkanCommand):
             self.CONFIG = config
 
         self.resource_url_tag = self.CONFIG.get(
-            'googleanalytics_resource_prefix',
+            'ds_stats.ga.resource_prefix',
             DEFAULT_RESOURCE_URL_TAG)
 
         # funny dance we need to do to make sure we've got a
@@ -353,6 +353,9 @@ class LoadAnalyticsGA(CkanCommand):
 
         try:
             self.service = init_service(self.args[0])
+            from googleapiclient.discovery import Resource
+            if not isinstance(self.service, Resource):
+                self.service = self.service[1]
         except TypeError as e:
             raise Exception('Unable to create a service: {0}'.format(e))
         self.profile_id = get_profile_id(self.service)
