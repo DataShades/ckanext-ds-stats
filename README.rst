@@ -53,6 +53,59 @@ The ds_stats.ga-report.bounce_url specifies a particular path to record the boun
 
     ckan.plugins = ds_stats
 
+5. Finally, there are some optional configuration settings (shown here
+   with their default settings)::
+
+      ds_stats.ga.resource_prefix = /downloads/
+      ds_stats.ga.domain = auto
+      ds_stats.ga.track_events = false
+      ds_stats.ga.fields = {}
+      ds_stats.ga.show_downloads = true
+
+   ``resource_prefix`` is an arbitrary identifier so that we can query
+   for downloads in Google Analytics.  It can theoretically be any
+   string, but should ideally resemble a URL path segment, to make
+   filtering for all resources easier in the Google Analytics web
+   interface.
+
+   ``domain`` allows you to specify a domain against which Analytics
+   will track users.  You will usually want to leave this as ``auto``;
+   if you are tracking users from multiple subdomains, you might want
+   to specify something like ``.mydomain.com``.
+   See `Google's documentation
+   <http://code.google.com/apis/analytics/docs/gaJS/gaJSApiDomainDirectory.html#_gat.GA_Tracker_._setDomainName>`_
+   for more info.
+
+   If ``track_events`` is set, Google Analytics event tracking will be
+   enabled. *CKAN 1.x only.* *Note that event tracking for resource downloads
+   is always enabled,* ``track_events`` *enables event tracking for other
+   pages as well.*
+
+   ``fields`` allows you to specify various options when creating the tracker. See `Google's documentation
+   <https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference>`_
+   for more info.
+
+   If ``show_downloads`` is set, a download count for resources will be displayed on individual package pages.
+
+6. Look at some stats within CKAN
+
+   Once your GA account has gathered some data, you can see some basic
+   information about the most popular packages at:
+   http://mydomain.com/stats/analytics/dataset/top
+
+   By default the only data that is injected into the public-facing
+   website is on the package page, where number of downloads are
+   displayed next to each resource.
+
+Domain Linking
+--------------
+
+This plugin supports cross-domain tracking using Googles' site linking feature.
+
+To use this, set the ``ds_stats.ga.linked_domains`` configuration option to a (comma seperated) list of domains to report for.
+
+See `Googles' documentation<https://support.google.com/analytics/answer/1034342?hl=en>`_ for more information
+
 
 Authorization
 --------------

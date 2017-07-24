@@ -1,15 +1,15 @@
 {% extends "page.html" %}
 
 {% block subtitle %}{{ _("Site Statistics") }}{% endblock %}
+
 {% block breadcrumb_content %}
-<li class="active">
-    <h3>{{ 'Statistics' }}<h3>
-</li>
+    <li><a href="{{g.site_url}}/stats">Statistics</a></li>
+    <li class="breadcrumb-stats active"><a href="{{g.site_url}}/stats#stats-summary">Summary</a>
 {% endblock %}
 
 {% block primary_content %}
 {% set stats_ctrl = 'ckanext.ds_stats.controller.dga_controller:StatsController' %}
-<article class="module">
+<article class="module ds-stats">
     {% if h.check_access('sysadmin') %}
     <section id="stats-activity-counts" class="module-content tab-content">
         <h2>{{ _('Site Activity Log') }}</h2>
@@ -113,7 +113,7 @@
         {% endif %}
     </section>
     {% endif %}
-    <section id="stats-total-datasets" class="module-content tab-content active">
+    <section id="stats-total-datasets" class="module-content tab-content">
         <h2>{{ _('Total number of Datasets') }}
            {% link_for _('Download as CSV'), controller=stats_ctrl,
                action='download_stats_csv', tab='stats-total-datasets', class_='btn btn-primary', icon='plus-sign-alt' %}
@@ -328,7 +328,7 @@
         <p class="empty">{{ _('No groups') }}</p>
         {% endif %}
     </section>
-    <section id="stats-summary" class="module-content tab-content">
+    <section id="stats-summary" class="module-content tab-content active">
         <h2>{{ _('Summary') }}
         {% link_for _('Download as CSV'), controller=stats_ctrl,
             action='download_stats_csv', tab='stats-summary', class_='btn btn-primary', icon='plus-sign-alt' %}
@@ -363,8 +363,20 @@
 
 {% block secondary_content %}
 <section class="module module-narrow">
+    <h2 class="module-heading"><i class="icon-bar-chart icon-medium"></i> {{ _('Site Analytics Menu') }}</h2>
+    <nav>
+        <ul class="unstyled nav nav-simple">
+            <li class="nav-item"><a href="{{g.site_url}}/stats/site-analytics">Site Analytics</a></li>
+        </ul>
+    </nav>
+    <h2 class="module-heading"><i class="icon-bar-chart icon-medium"></i> {{ _('Site Googleanalytics Menu') }}</h2>
+    <nav>
+        <ul class="unstyled nav nav-simple">
+            <li class="nav-item"><a href="{{g.site_url}}/stats/analytics/package/top">Site Googleanalytics</a></li>
+        </ul>
+    </nav>
     <h2 class="module-heading"><i class="icon-bar-chart icon-medium"></i> {{ _('Statistics Menu') }}</h2>
-    <nav data-module="stats-nav">
+    <nav data-module="stats-nav" class="ds-stats-nav">
         <ul class="unstyled nav nav-simple">
             {% if h.check_access('sysadmin') %}
             <li class="nav-item"><a href="#stats-recent-datasets" data-toggle="tab">{{ _('Recent Datasets') }}</a></li>
@@ -381,7 +393,6 @@
             </li>
             <li class="nav-item"><a href="#stats-activity-org" data-toggle="tab">{{ _('Most Active Organisations')
                 }}</a></li>
-            <li class="nav-item"><a href="{{g.site_url}}/site-usage">Site Analytics</a></li>
             <li class="nav-item active"><a href="#stats-summary" data-toggle="tab">{{ _('Summary') }}</a></li>
         </ul>
     </nav>

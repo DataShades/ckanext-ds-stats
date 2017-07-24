@@ -53,11 +53,10 @@ def ga_enabled_routes_before_map(map):
         m.connect('/rest/{register}/{id}', action='delete',
                   conditions=DELETE)
 
-
-def ga_enabled_routes_after_map(map):
-    map.redirect("/analytics/package/top", "/analytics/dataset/top")
+    map.redirect("/stats/analytics/package/top",
+                 "/stats/analytics/dataset/top")
     map.connect(
-        'analytics', '/analytics/dataset/top',
+        'analytics', '/stats/analytics/dataset/top',
         controller=GA_CTRL,
         action='view'
     )
@@ -69,24 +68,27 @@ def dga_stats_enabled_routes_after_map(map):
         m.connect('stats_action', '/stats/{action}')
 
 
-def ga_report_enabled_routes_after_map(map):
+def ga_report_enabled_routes_before_map(map):
     # GaReport
     with SubMapper(map, controller=GAREPORT_CTRL) as m:
-        m.connect('/site-usage', action='index')
-        m.connect('/site-usage_{month}.csv', action='csv')
-        m.connect('/site-usage/downloads', action='downloads')
-        m.connect('/site-usage/downloads_{month}.csv', action='csv_downloads')
+        m.connect('/stats/site-analytics', action='index')
+        m.connect('/stats/site-analytics_{month}.csv', action='csv')
+        m.connect('/stats/site-analytics/downloads', action='downloads')
+        m.connect('/stats/site-analytics/downloads_{month}.csv',
+                  action='csv_downloads')
 
     # GaDatasetReport
     with SubMapper(map, controller=GADATASETREPORT_CTRL) as m:
-        m.connect('/site-usage/publisher', action='publishers')
-        m.connect('/site-usage/publishers_{month}.csv', action='publisher_csv')
+        m.connect('/stats/site-analytics/publisher', action='publishers')
+        m.connect('/stats/site-analytics/publishers_{month}.csv',
+                  action='publisher_csv')
         m.connect(
-            '/site-usage/dataset/datasets_{id}_{month}.csv',
+            '/stats/site-analytics/dataset/datasets_{id}_{month}.csv',
             action='dataset_csv'
         )
-        m.connect('/site-usage/dataset', action='read')
-        m.connect('/site-usage/dataset/{id}', action='read_publisher')
+        m.connect('/stats/site-analytics/dataset', action='read')
+        m.connect('/stats/site-analytics/dataset/{id}',
+                  action='read_publisher')
 
 
 def stats_admin_enabled_routes_before_map(map):

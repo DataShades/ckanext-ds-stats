@@ -1,3 +1,16 @@
-.js .tab-content {
+.js .ds-stats .tab-content.active {
     display: block;
+}
+
+.js .ga-report .tab-content {
+    display: block;
+}
+
+.tab-content h2 a {
+    float: right;
+}
+
+.ds-stats-nav .nav .nav-item.active > a,
+.ds-ga-report-nav .nav .nav-item.active > a {
+    background-color: #8ca0a6;
 }

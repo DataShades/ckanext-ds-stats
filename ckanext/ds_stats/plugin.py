@@ -8,9 +8,8 @@ from ckanext.ds_stats.helpers import (most_popular_datasets,
                                       join_x, join_y, date_range)
 from ckanext.ds_stats.ds_stats_routes import (
     ga_enabled_routes_before_map,
-    ga_enabled_routes_after_map,
     dga_stats_enabled_routes_after_map,
-    ga_report_enabled_routes_after_map,
+    ga_report_enabled_routes_before_map,
     stats_admin_enabled_routes_before_map
 )
 import ast
@@ -127,13 +126,12 @@ class DsStatsPlugin(plugins.SingletonPlugin):
     def before_map(self, map):
         ga_enabled_routes_before_map(map)
         stats_admin_enabled_routes_before_map(map)
+        ga_report_enabled_routes_before_map(map)
         return map
 
     def after_map(self, map):
         dga_stats_enabled_routes_after_map(map)
         self.modify_resource_download_route(map)
-        ga_enabled_routes_after_map(map)
-        ga_report_enabled_routes_after_map(map)
         return map
 
     # ITemplateHelpers
@@ -163,12 +161,12 @@ class DsStatsPlugin(plugins.SingletonPlugin):
         if 'ds_stats.ga.id' in config:
             self.googleanalytics_id = config['ds_stats.ga.id']
             self.googleanalytics_domain = config.get(
-                    'googleanalytics.domain', 'auto')
+                    'ds_stats.ga.domain', 'auto')
             self.googleanalytics_fields = ast.literal_eval(config.get(
-                'googleanalytics.fields', '{}'))
+                'ds_stats.ga.fields', '{}'))
 
             googleanalytics_linked_domains = config.get(
-                'googleanalytics.linked_domains', ''
+                'ds_stats.ga.linked_domains', ''
             )
             self.googleanalytics_linked_domains = [
                 x.strip() for x in googleanalytics_linked_domains.split(',') if x
@@ -180,16 +178,16 @@ class DsStatsPlugin(plugins.SingletonPlugin):
             # If resource_prefix is not in config file then write the default
             # value to the config dict, otherwise templates seem to get 'true'
             # when they try to read resource_prefix from config.
-            if 'googleanalytics_resource_prefix' not in config:
+            if 'ds_stats.ga.resource_prefix' not in config:
                 config['googleanalytics_resource_prefix'] = (
                         commands.DEFAULT_RESOURCE_URL_TAG)
             self.googleanalytics_resource_prefix = config[
-                'googleanalytics_resource_prefix']
+                'ds_stats.ga.resource_prefix']
 
             self.show_downloads = converters.asbool(
-                config.get('googleanalytics.show_downloads', True))
+                config.get('ds_stats.ga.show_downloads', True))
             self.track_events = converters.asbool(
-                config.get('googleanalytics.track_events', False))
+                config.get('ds_stats.ga.track_events', False))
 
             # spawn a pool of 5 threads, and pass them queue instance
             for i in range(5):

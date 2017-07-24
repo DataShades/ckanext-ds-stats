@@ -4,8 +4,8 @@
 {% block title %}Usage by Publisher - {{ super() }}{% endblock %}
 
 {% block breadcrumb_content %}
-    <li><a href="/site-usage">Site Analytics</a></li>
-    <li><a href="/site-usage/publisher">Publishers</a></li>
+    <li><a href="/stats/site-analytics">Site Analytics</a></li>
+    <li class="active"><a href="/stats/site-analytics/publisher">Publishers</a></li>
 {% endblock %}
 
 {% block primary_content_inner %}
@@ -56,4 +56,16 @@
      </table>
   </div><!--/content-->
 
+{% endblock %}
+
+{% block secondary_content %}
+<section class="module module-narrow">
+    <h2 class="module-heading"><i class="icon-bar-chart icon-medium"></i> {{ _('Site usage menu') }}</h2>
+    <nav class="ds-ga-report-publisher-nav">
+        <ul class="unstyled nav nav-simple">
+            <li class="nav-item"><a href="{{g.site_url}}/stats/site-analytics">{{ _('Site Analytics') }}</a></li>
+            <li class="nav-item"><a href="{{g.site_url}}/stats">{{ _('Site Stats') }}</a></li>
+        </ul>
+    </nav>
+</section>
 {% endblock %}

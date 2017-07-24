@@ -2,6 +2,11 @@
 
 {% block title %}Analytics for {{ super() }}{% endblock %}
 
+{% block breadcrumb_content %}
+    <li><a href="{{g.site_url}}/stats">Statistics</a></li>
+    <li class="breadcrumb-stats active"><a href="{{g.site_url}}/stats/analytics/package/top">Googleanalytics Summary</a>
+{% endblock %}
+
 {% block primary_content_inner %}
     <div class="row">
         <h2>Most viewed datasets</h2>
@@ -49,4 +54,16 @@
             {% endfor %}
         </table>
     </div>
+{% endblock %}
+
+{% block secondary_content %}
+<section class="module module-narrow">
+    <h2 class="module-heading"><i class="icon-bar-chart icon-medium"></i> {{ _('Site Stats/Analytics Menu') }}</h2>
+    <nav>
+        <ul class="unstyled nav nav-simple">
+            <li class="nav-item"><a href="{{g.site_url}}/stats">Site Stats</a></li>
+            <li class="nav-item"><a href="{{g.site_url}}/stats/site-analytics">Site Analytics</a></li>
+        </ul>
+    </nav>
+</section>
 {% endblock %}

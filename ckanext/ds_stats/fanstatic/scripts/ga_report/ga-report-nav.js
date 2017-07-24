@@ -7,10 +7,10 @@
  * prefix - The prefix used on the ids.
  *
  */
-this.ckan.module('stats-nav', {
+this.ckan.module('ga-report-nav', {
   /* An options object */
   options: {
-    prefix: 'stats-'
+    prefix: 'ga-report-'
   },
 
   /* Initializes the module and sets up event listeners.
@@ -25,12 +25,12 @@ this.ckan.module('stats-nav', {
 
     // Update the hash fragment when the tab changes.
     this.el.on('shown', function (event) {
-        location.hash = event.target.hash.slice(prefix.length + 1);
-        var url = event.target.hash;
-        var menu_name = $('[href^=' + event.target.hash + ']').html();
-        var old_menu = $('.breadcrumb').children()[2];
-        var new_menu = $('<a href="' + url + '">' + menu_name + '</a>');
-        $(old_menu).html(new_menu);
+      location.hash = event.target.hash.slice(prefix.length + 1);
+      var url = event.target.hash;
+      var menu_name = $('[href^=' + event.target.hash + ']').html();
+      var old_menu = $('.breadcrumb').children()[3];
+      var new_menu = $('<a href="' + url + '">' + menu_name + '</a>');
+      $(old_menu).html(new_menu);
     });
 
     // Show the current tab if the location provides one.
