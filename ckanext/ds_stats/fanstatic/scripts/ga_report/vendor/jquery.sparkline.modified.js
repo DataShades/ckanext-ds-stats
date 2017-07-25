@@ -1,4 +1,4 @@
-/* 
+/*
  * This file has been modified!
  * I've added a static Tooltip option.
  *  - Tom Rees
