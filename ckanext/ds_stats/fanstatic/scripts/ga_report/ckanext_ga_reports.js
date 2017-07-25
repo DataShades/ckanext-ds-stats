@@ -32,31 +32,33 @@ CKAN.GA_Reports.render_rickshaw = function( css_name, data, mode, colorscheme ) 
 
     var graphElement =  document.querySelector("#chart_"+css_name);
 
-    var graph = new Rickshaw.Graph( {
-        element: document.querySelector("#chart_"+css_name),
-        renderer: mode,
-        series: data ,
-        height: 328
-    });
-    var x_axis = new Rickshaw.Graph.Axis.Time( {
-        graph: graph
-    } );
-    var y_axis = new Rickshaw.Graph.Axis.Y( {
+    if (data[0].data.length > 0) {
+      var graph = new Rickshaw.Graph( {
+          element: document.querySelector("#chart_"+css_name),
+          renderer: mode,
+          series: data ,
+          height: 328
+      });
+      var x_axis = new Rickshaw.Graph.Axis.Time( {
+          graph: graph
+      } );
+      var y_axis = new Rickshaw.Graph.Axis.Y( {
+          graph: graph,
+          orientation: 'left',
+          tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
+          element: document.getElementById('y_axis_'+css_name)
+      } );
+      var legend = new Rickshaw.Graph.Legend( {
+          element: document.querySelector('#legend_'+css_name),
+          graph: graph
+      } );
+      var shelving = new Rickshaw.Graph.Behavior.Series.Toggle( {
         graph: graph,
-        orientation: 'left',
-        tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
-        element: document.getElementById('y_axis_'+css_name)
-    } );
-    var legend = new Rickshaw.Graph.Legend( {
-        element: document.querySelector('#legend_'+css_name),
-        graph: graph
-    } );
-    var shelving = new Rickshaw.Graph.Behavior.Series.Toggle( {
-      graph: graph,
-      legend: legend
-    } );
-    myLegend.prepend('<div class="instructions">Click on a series below to isolate its graph:</div>');
-    graph.render();
+        legend: legend
+      } );
+      myLegend.prepend('<div class="instructions">Click on a series below to isolate its graph:</div>');
+      graph.render();
+    };
 };
 
 CKAN.GA_Reports.bind_sparklines = function() {
@@ -66,7 +68,7 @@ CKAN.GA_Reports.bind_sparklines = function() {
    * Note that they cannot be drawn sooner.
    */
   var created = false;
-  $('a[href="#totals"]').on(
+  $('a[href="#ga-report-totals"]').on(
     'shown',
       function() {
         if (!created) {
