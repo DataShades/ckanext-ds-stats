@@ -13,6 +13,8 @@
     <li class="breadcrumb-ga-report active"><a href="{{g.site_url}}/stats/site-analytics#ga-report-totals">Totals</a>
 {% endblock %}
 
+{% block maintag %}<div role="main" class="ga-report-page">{% endblock %}
+
 {% block primary_content_inner %}
 {% set ga_report_ctrl = 'ckanext.ds_stats.controller.ga_report_controller:GaReport' %}
   <div data-module="ga_report_graphs_others" class="ga-report">

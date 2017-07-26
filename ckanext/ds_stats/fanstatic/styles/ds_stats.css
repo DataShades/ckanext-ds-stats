@@ -14,3 +14,13 @@
 .ds-ga-report-nav .nav .nav-item.active > a {
     background-color: #8ca0a6;
 }
+
+@media (min-width: 768px) {
+    .ga-report-page .primary.span9 .module div.module-content,
+    .ga-page .primary.span9 .module div.module-content {
+        margin-left: 17px;
+    }
+    .primary.span9 .module.ds-stats {
+        margin-left: -17px;
+    }
+}

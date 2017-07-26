@@ -36,7 +36,7 @@
         <p class="empty">{{ _('No groups') }}</p>
         {% endif %}
     </section>
-    <section id="stats-recent-datasets" class="module-content tab-content">
+    <section id="stats-recent-datasets" class="module-content tab-content active">
         <h2>{{ _('Recent Datasets') }}
             {% link_for _('Download as CSV'), controller=stats_ctrl,
                 action='download_stats_csv', tab='stats-recent-datasets', class_='btn btn-primary', icon='plus-sign-alt' %}
@@ -113,7 +113,7 @@
         {% endif %}
     </section>
     {% endif %}
-    <section id="stats-total-datasets" class="module-content tab-content">
+    <section id="stats-total-datasets" class="module-content tab-content {% if not h.check_access('sysadmin') %}active{% endif %}">
         <h2>{{ _('Total number of Datasets') }}
            {% link_for _('Download as CSV'), controller=stats_ctrl,
                action='download_stats_csv', tab='stats-total-datasets', class_='btn btn-primary', icon='plus-sign-alt' %}
@@ -328,7 +328,7 @@
         <p class="empty">{{ _('No groups') }}</p>
         {% endif %}
     </section>
-    <section id="stats-summary" class="module-content tab-content active">
+    <section id="stats-summary" class="module-content tab-content">
         <h2>{{ _('Summary') }}
         {% link_for _('Download as CSV'), controller=stats_ctrl,
             action='download_stats_csv', tab='stats-summary', class_='btn btn-primary', icon='plus-sign-alt' %}
@@ -379,11 +379,10 @@
     <nav data-module="stats-nav" class="ds-stats-nav">
         <ul class="unstyled nav nav-simple">
             {% if h.check_access('sysadmin') %}
-            <li class="nav-item"><a href="#stats-recent-datasets" data-toggle="tab">{{ _('Recent Datasets') }}</a></li>
-            <li class="nav-item"><a href="#stats-user-access-list" data-toggle="tab">{{ _('User Access List') }}</a>
-            </li>
+                <li class="nav-item active"><a href="#stats-recent-datasets" data-toggle="tab">{{ _('Recent Datasets') }}</a></li>
+                <li class="nav-item"><a href="#stats-user-access-list" data-toggle="tab">{{ _('User Access List') }}</a></li>
             {% endif %}
-            <li class="nav-item"><a href="#stats-total-datasets" data-toggle="tab">{{ _('Total Number of Datasets')
+            <li class="nav-item {% if not h.check_access('sysadmin')%}active{% endif %}"><a href="#stats-total-datasets" data-toggle="tab">{{ _('Total Number of Datasets')
                 }}</a></li>
             <li class="nav-item"><a href="#stats-dataset-revisions" data-toggle="tab">{{ _('Dataset Revisions per Week')
                 }}</a></li>
@@ -391,9 +390,8 @@
             <li class="nav-item"><a href="#stats-by-org" data-toggle="tab">{{ _('Datasets by Organization') }}</a></li>
             <li class="nav-item"><a href="#stats-res-by-org" data-toggle="tab">{{ _('Resources by Organization') }}</a>
             </li>
-            <li class="nav-item"><a href="#stats-activity-org" data-toggle="tab">{{ _('Most Active Organisations')
-                }}</a></li>
-            <li class="nav-item active"><a href="#stats-summary" data-toggle="tab">{{ _('Summary') }}</a></li>
+            <li class="nav-item"><a href="#stats-activity-org" data-toggle="tab">{{ _('Most Active Organisations') }}</a></li>
+            <li class="nav-item"><a href="#stats-summary" data-toggle="tab">{{ _('Summary') }}</a></li>
         </ul>
     </nav>
 </section>
