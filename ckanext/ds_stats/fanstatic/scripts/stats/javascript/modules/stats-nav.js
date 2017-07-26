@@ -32,10 +32,5 @@ this.ckan.module('stats-nav', {
         var new_menu = $('<a href="' + url + '">' + menu_name + '</a>');
         $(old_menu).html(new_menu);
     });
-
-    // Show the current tab if the location provides one.
-    if (selected.length) {
-      selected.tab('show');
-    }
   }
 });
