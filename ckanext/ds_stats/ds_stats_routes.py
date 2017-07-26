@@ -73,9 +73,6 @@ def ga_report_enabled_routes_before_map(map):
     with SubMapper(map, controller=GAREPORT_CTRL) as m:
         m.connect('/stats/site-analytics', action='index')
         m.connect('/stats/site-analytics_{month}.csv', action='csv')
-        m.connect('/stats/site-analytics/downloads', action='downloads')
-        m.connect('/stats/site-analytics/downloads_{month}.csv',
-                  action='csv_downloads')
 
     # GaDatasetReport
     with SubMapper(map, controller=GADATASETREPORT_CTRL) as m:
