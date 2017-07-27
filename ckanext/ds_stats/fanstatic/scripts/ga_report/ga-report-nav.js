@@ -21,7 +21,13 @@ this.ckan.module('ga-report-nav', {
     var location = this.sandbox.location;
     var prefix = this.options.prefix;
     var hash = location.hash.slice(1);
-    var selected = this.$('[href^=#' + prefix + hash + ']');
+    if (hash == "" && location.pathname == "/stats/site-analytics") {
+        var selected = this.$("[href^=#ga-report-totals]");
+        $('.graph-legend').hide();
+    } else {
+        var selected = this.$('[href^=#' + prefix + hash + ']');
+        $('.graph-legend').show();
+    }
 
     // Update the hash fragment when the tab changes.
     this.el.on('shown', function (event) {
@@ -31,6 +37,15 @@ this.ckan.module('ga-report-nav', {
       var old_menu = $('.breadcrumb').children()[3];
       var new_menu = $('<a href="' + url + '">' + menu_name + '</a>');
       $(old_menu).html(new_menu);
+      if (menu_name == "Totals") {
+          $('.graph-legend').hide();
+      } else {
+          $('.graph-legend').show();
+      }
     });
+
+    if (selected.length) {
+        selected.tab('show');
+    }
   }
 });
